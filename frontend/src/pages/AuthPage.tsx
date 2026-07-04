@@ -110,6 +110,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
             </>
           )}
         </p>
+        <p className="tf-auth-version mono">v{__APP_VERSION__}</p>
       </form>
     </div>
   );

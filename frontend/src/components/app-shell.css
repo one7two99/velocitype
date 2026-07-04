@@ -47,6 +47,18 @@
   align-items: center;
   gap: 1rem;
 }
+.tf-version {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.tf-version:hover { color: var(--accent); border-color: var(--accent); }
+
 .tf-user { color: var(--text-muted); font-size: 0.85rem; }
 .tf-logout {
   background: none;
