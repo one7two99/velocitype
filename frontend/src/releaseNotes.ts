@@ -15,6 +15,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.9.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Two key heatmaps on the Dashboard: one by accuracy and one by speed.",
+        "The speed heatmap colours each key against your target — green at or above target, red for slower keys.",
+      ],
+    },
+  },
+  {
     version: "0.8.0",
     date: "2026-07-04",
     sections: {

@@ -38,6 +38,26 @@
   padding: 0.5rem 0;
 }
 
+.tf-heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0.5rem 0 0;
+}
+.tf-heat-swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  margin-left: 0.6rem;
+  vertical-align: -1px;
+}
+.tf-heat-swatch--good { background: var(--correct); }
+.tf-heat-swatch--bad { background: var(--heat-max); }
+
 .tf-sessions { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .tf-sessions th {
   text-align: left;

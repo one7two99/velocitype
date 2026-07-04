@@ -125,12 +125,40 @@ export function DashboardPage() {
       </div>
 
       <Card>
-        <h3 className="tf-card-title">Key Heatmap — {layoutInfo?.name}</h3>
+        <h3 className="tf-card-title">Key Heatmap — Accuracy</h3>
         <div className="tf-heatmap-center">
           {layoutInfo && (
-            <FerrisHeatmap layout={layoutInfo} cells={heat.data?.keys ?? []} />
+            <FerrisHeatmap
+              layout={layoutInfo}
+              cells={heat.data?.keys ?? []}
+              metric="error"
+            />
           )}
         </div>
+        <p className="tf-heat-legend">
+          <span className="tf-heat-swatch tf-heat-swatch--bad" /> more errors
+          {"   "}
+          <span className="tf-heat-swatch tf-heat-swatch--good" /> accurate
+        </p>
+      </Card>
+
+      <Card>
+        <h3 className="tf-card-title">Key Heatmap — Speed</h3>
+        <div className="tf-heatmap-center">
+          {layoutInfo && (
+            <FerrisHeatmap
+              layout={layoutInfo}
+              cells={heat.data?.keys ?? []}
+              metric="speed"
+              target={targetWpm}
+            />
+          )}
+        </div>
+        <p className="tf-heat-legend">
+          <span className="tf-heat-swatch tf-heat-swatch--good" /> at/above target
+          ({targetWpm} WPM){"   "}
+          <span className="tf-heat-swatch tf-heat-swatch--bad" /> slower
+        </p>
       </Card>
 
       <Card>
