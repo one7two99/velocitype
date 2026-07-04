@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { lessonsApi, mcpApi } from "../api/endpoints";
 import type { ApiKeyCreated } from "../api/types";
-import { AccountSection } from "../components/AccountSection";
 import { Button, Card, Field, Input, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings, type ThemePref } from "../stores/settingsStore";
@@ -204,8 +203,6 @@ export function SettingsPage() {
           <div className="tf-chart-empty">No API keys yet.</div>
         )}
       </Card>
-
-      <AccountSection />
     </div>
   );
 }
