@@ -1,0 +1,33 @@
+.tf-coach {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 720px;
+}
+
+.tf-coach-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tf-coach-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.tf-coach-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0.75rem 0 0;
+}
+
+.tf-coach-analysis {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin: 0;
+}

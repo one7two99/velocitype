@@ -9,6 +9,20 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-04
+
+### Added
+- Local AI coaching via a self-hosted **Ollama** LLM (no external LLM API): a
+  new **Coach** page and endpoints `GET /api/coach/status`,
+  `POST /api/coach/analyze` (natural-language coaching from your stats) and
+  `POST /api/coach/drill` (LLM-generated drill targeting weak keys, started as a
+  custom session). Drill output is sanitized to typeable text and falls back to
+  the deterministic adaptive generator when the model is unavailable.
+- Bundled `ollama` + one-shot `ollama-pull` Docker services (model configurable
+  via `OLLAMA_MODEL`, default `qwen3.5:4b`; `OLLAMA_BASE_URL` to target a host
+  instance). GPU is opt-in via a commented `deploy.resources` block.
+- Navigation hotkey `c` → Coach.
+
 ## [0.5.0] - 2026-07-04
 
 ### Added
@@ -93,7 +107,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/adi-infra/typeforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adi-infra/typeforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/adi-infra/typeforge/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/adi-infra/typeforge/compare/v0.2.1...v0.3.0

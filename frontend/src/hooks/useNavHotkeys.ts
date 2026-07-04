@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 /**
- * Global single-key navigation: t -> Trainer, d -> Dashboard, s -> Settings.
+ * Global single-key navigation: t -> Trainer, d -> Dashboard, s -> Settings,
+ * c -> Coach.
  *
- * Only mounted on non-typing pages (Dashboard, Settings) — never on the Trainer,
- * where those letters are lesson input. Ignores keystrokes typed into form
- * fields so text entry (e.g. the API-key name) isn't hijacked.
+ * Only mounted on non-typing pages (Dashboard, Settings, Coach) — never on the
+ * Trainer, where those letters are lesson input. Ignores keystrokes typed into
+ * form fields so text entry (e.g. the API-key name) isn't hijacked.
  */
 export function useNavHotkeys() {
   const navigate = useNavigate();
@@ -35,6 +36,10 @@ export function useNavHotkeys() {
         case "s":
           e.preventDefault();
           navigate("/settings");
+          break;
+        case "c":
+          e.preventDefault();
+          navigate("/coach");
           break;
       }
     };

@@ -8,6 +8,7 @@ built for the Ferris Sweep (Colemak-DH) from day one.
 - **Frontend:** React 18 + TypeScript + Vite, Zustand, TanStack Query, recharts
 - **Edge:** Caddy 2 (reverse proxy, security headers, static SPA)
 - **Auth:** Argon2id, RS256 JWT in `httpOnly`/`SameSite=Strict` cookies, refresh-token rotation
+- **Coaching:** local Ollama LLM (no external API) for analysis + drill generation
 
 ## Quick start
 
@@ -70,6 +71,27 @@ npm install
 npm run dev            # http://localhost:5173
 npm run build          # type-check (tsc) + production bundle into dist/
 ```
+
+## AI Coach (local Ollama)
+
+The **Coach** page generates a coaching analysis and targeted practice drills from
+your stats using a **local** [Ollama](https://ollama.com) model — nothing is sent
+to any external LLM API.
+
+- A bundled `ollama` service runs the model; a one-shot `ollama-pull` fetches
+  `OLLAMA_MODEL` (default `qwen3.5:4b`, ~3.4 GB) into a volume on first `up`.
+- The app stays fully usable while the model downloads; coaching shows a
+  "downloading" state, and drill generation falls back to the deterministic
+  adaptive generator if the model is unavailable.
+- **CPU note:** without a GPU, generation is slow (a few tokens/sec) — an
+  analysis can take up to a minute or two. Configure a GPU by uncommenting the
+  `deploy.resources` block on the `ollama` service in `docker-compose.yml`.
+- To use an existing host Ollama instead of the bundled service, set
+  `OLLAMA_BASE_URL=http://host.docker.internal:11434` (the host must listen on
+  `0.0.0.0`, i.e. `OLLAMA_HOST=0.0.0.0 ollama serve`).
+
+Endpoints (session-authenticated): `GET /api/coach/status`,
+`POST /api/coach/analyze`, `POST /api/coach/drill`.
 
 ## Continuous integration
 

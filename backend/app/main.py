@@ -10,7 +10,7 @@ from app.config import get_settings
 from app.db.redis import redis_client
 from app.db.session import engine
 from app.errors import register_exception_handlers
-from app.routers import auth, keystrokes, lessons, mcp, sessions, stats
+from app.routers import auth, coach, keystrokes, lessons, mcp, sessions, stats
 
 _settings = get_settings()
 
@@ -62,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(stats.router)
     app.include_router(lessons.router)
     app.include_router(mcp.router)
+    app.include_router(coach.router)
 
     return app
 
