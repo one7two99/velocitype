@@ -102,6 +102,7 @@ export interface KeyHeatCell {
   errors: number;
   error_rate: number;
   avg_latency_ms: number | null;
+  consistency: number | null;
 }
 
 export interface KeyHeatmap {
