@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { lessonsApi, sessionsApi, statsApi } from "../api/endpoints";
+import { sessionsApi, statsApi } from "../api/endpoints";
 import type { TrendPoint } from "../api/types";
 import { TrendChart } from "../components/Charts";
-import { FerrisHeatmap } from "../components/FerrisHeatmap/FerrisHeatmap";
 import { Card, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings } from "../stores/settingsStore";
@@ -33,17 +32,6 @@ export function DashboardPage() {
     queryKey: ["sessions", "history"],
     queryFn: () => sessionsApi.history(1, 10),
   });
-  const layouts = useQuery({
-    queryKey: ["layouts"],
-    queryFn: lessonsApi.layouts,
-  });
-
-  const layoutInfo = useMemo(
-    () =>
-      layouts.data?.layouts.find((l) => l.id === layoutId) ??
-      layouts.data?.layouts[0],
-    [layouts.data, layoutId],
-  );
 
   const trend: TrendPoint[] = useMemo(() => {
     const o = overview.data;
@@ -59,7 +47,7 @@ export function DashboardPage() {
     return [...m.values()].sort((a, b) => a.date.localeCompare(b.date));
   }, [overview.data]);
 
-  if (overview.isLoading || layouts.isLoading) {
+  if (overview.isLoading) {
     return (
       <div className="tf-center">
         <Spinner />
@@ -123,61 +111,6 @@ export function DashboardPage() {
           </table>
         </Card>
       </div>
-
-      <Card>
-        <h3 className="tf-card-title">Key Heatmap — Accuracy</h3>
-        <div className="tf-heatmap-center">
-          {layoutInfo && (
-            <FerrisHeatmap
-              layout={layoutInfo}
-              cells={heat.data?.keys ?? []}
-              metric="error"
-            />
-          )}
-        </div>
-        <p className="tf-heat-legend">
-          <span className="tf-heat-swatch tf-heat-swatch--bad" /> more errors
-          {"   "}
-          <span className="tf-heat-swatch tf-heat-swatch--good" /> accurate
-        </p>
-      </Card>
-
-      <Card>
-        <h3 className="tf-card-title">Key Heatmap — Speed</h3>
-        <div className="tf-heatmap-center">
-          {layoutInfo && (
-            <FerrisHeatmap
-              layout={layoutInfo}
-              cells={heat.data?.keys ?? []}
-              metric="speed"
-              target={targetWpm}
-            />
-          )}
-        </div>
-        <p className="tf-heat-legend">
-          <span className="tf-heat-swatch tf-heat-swatch--good" /> at/above target
-          ({targetWpm} WPM){"   "}
-          <span className="tf-heat-swatch tf-heat-swatch--bad" /> slower
-        </p>
-      </Card>
-
-      <Card>
-        <h3 className="tf-card-title">Key Heatmap — Consistency</h3>
-        <div className="tf-heatmap-center">
-          {layoutInfo && (
-            <FerrisHeatmap
-              layout={layoutInfo}
-              cells={heat.data?.keys ?? []}
-              metric="consistency"
-            />
-          )}
-        </div>
-        <p className="tf-heat-legend">
-          <span className="tf-heat-swatch tf-heat-swatch--good" /> steady timing
-          {"   "}
-          <span className="tf-heat-swatch tf-heat-swatch--bad" /> erratic
-        </p>
-      </Card>
 
       <Card>
         <h3 className="tf-card-title">Recent Sessions</h3>

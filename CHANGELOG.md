@@ -9,6 +9,16 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-05
+
+### Added
+- New **Analysis** page (`/analysis`, nav item + hotkey `a`) housing the three
+  per-key heatmaps (accuracy, speed, consistency).
+
+### Changed
+- The Dashboard now focuses on the progress overview (trend, personal bests,
+  recent sessions); the per-key heatmaps moved to the Analysis page.
+
 ## [0.11.0] - 2026-07-05
 
 ### Added
@@ -154,7 +164,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/adi-infra/typeforge/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/adi-infra/typeforge/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/adi-infra/typeforge/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/adi-infra/typeforge/compare/v0.8.0...v0.9.0

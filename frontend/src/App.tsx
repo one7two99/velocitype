@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { Spinner } from "./components/ui";
 import { useAuth } from "./hooks/useAuth";
+import { AnalysisPage } from "./pages/AnalysisPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CoachPage } from "./pages/CoachPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -52,6 +53,14 @@ export default function App() {
         element={
           <Protected>
             <SettingsPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/analysis"
+        element={
+          <Protected>
+            <AnalysisPage />
           </Protected>
         }
       />

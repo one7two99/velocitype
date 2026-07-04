@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.12.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "New Analysis page (nav item, hotkey 'a') with the three key heatmaps.",
+      ],
+      changed: [
+        "The Dashboard now focuses on progress (trend, personal bests, recent sessions); the per-key heatmaps moved to Analysis.",
+      ],
+    },
+  },
+  {
     version: "0.11.0",
     date: "2026-07-05",
     sections: {
