@@ -84,6 +84,18 @@ def test_weakest_keys_prioritizes_below_target():
     assert weak_target[0].character == "b"  # slow-vs-target key surfaces
 
 
+def test_latency_consistency():
+    # 5 identical latencies (mean 200, sq_sum 5*200^2) → perfectly consistent.
+    assert adaptive.latency_consistency(200.0, 5, 5 * 200.0**2) == pytest.approx(1.0)
+    # Too few samples → None.
+    assert adaptive.latency_consistency(200.0, 3, 3 * 200.0**2) is None
+    # 3×100ms + 3×300ms: mean 200, variance 10000, std 100, cv 0.5 → consistency 0.5.
+    n, sq = 6, 3 * (100.0**2) + 3 * (300.0**2)
+    assert adaptive.latency_consistency(200.0, n, sq) == pytest.approx(0.5)
+    # No latency data → None.
+    assert adaptive.latency_consistency(None, 10, 0.0) is None
+
+
 def test_graduation_with_target():
     fast = KeyMetric("a", attempts=100, errors=1, avg_latency_ms=180)  # ~67 wpm
     slow = KeyMetric("b", attempts=100, errors=1, avg_latency_ms=300)  # 40 wpm

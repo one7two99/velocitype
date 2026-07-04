@@ -121,3 +121,28 @@ async def test_stats_and_keys_after_session(client, unique_user):
     assert "q" in chars
     assert chars["q"]["attempts"] == 2
     assert chars["q"]["errors"] == 1
+
+
+async def test_per_key_consistency_reported(client, unique_user):
+    await _register(client, unique_user)
+    start = await client.post(
+        "/api/sessions/start",
+        json={"layout_id": DEFAULT_LAYOUT_ID, "mode": "adaptive", "duration_s": 30},
+    )
+    session_id = start.json()["session_id"]
+    # 7 't' keystrokes with steady ~100ms spacing → high consistency, enough samples.
+    ks = [
+        {"ts_offset_ms": i * 100, "expected_char": "t", "actual_char": "t", "correct": True}
+        for i in range(7)
+    ]
+    await client.post(f"/api/sessions/{session_id}/keystrokes", json={"keystrokes": ks})
+    await client.post(
+        f"/api/sessions/{session_id}/complete",
+        json={"wpm_raw": 60, "wpm_net": 58, "accuracy": 1.0, "consistency": 0.95},
+    )
+
+    keys = await client.get(f"/api/stats/keys?layout_id={DEFAULT_LAYOUT_ID}")
+    t = {c["character"]: c for c in keys.json()["keys"]}["t"]
+    assert t["consistency"] is not None
+    assert 0.0 <= t["consistency"] <= 1.0
+    assert t["consistency"] > 0.9  # steady spacing → very consistent

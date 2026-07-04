@@ -40,6 +40,7 @@ class KeyHeatCell(BaseModel):
     errors: int
     error_rate: float
     avg_latency_ms: float | None
+    consistency: float | None = None
 
 
 class KeyHeatmap(BaseModel):

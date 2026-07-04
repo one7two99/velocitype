@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.db.session import get_db
+from app.engine import adaptive
 from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.models.key_stat import KeyStat
 from app.models.session import TypingSession
@@ -152,6 +153,9 @@ async def key_heatmap(
     cells: list[KeyHeatCell] = []
     for r in result.scalars().all():
         error_rate = (r.errors / r.attempts) if r.attempts else 0.0
+        consistency = adaptive.latency_consistency(
+            _f(r.avg_latency_ms), r.latency_n, float(r.latency_sq_sum or 0.0)
+        )
         cells.append(
             KeyHeatCell(
                 character=r.character,
@@ -161,6 +165,7 @@ async def key_heatmap(
                 errors=r.errors,
                 error_rate=round(error_rate, 4),
                 avg_latency_ms=_f(r.avg_latency_ms),
+                consistency=round(consistency, 4) if consistency is not None else None,
             )
         )
     return KeyHeatmap(layout_id=layout_id, keys=cells)

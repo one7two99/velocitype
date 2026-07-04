@@ -46,7 +46,9 @@ def _per_key_aggregates(keystrokes: list[KeystrokeIn]) -> dict[str, dict]:
     prev_ts: int | None = None
     for ks in ordered:
         char = ks.expected_char
-        bucket = agg.setdefault(char, {"attempts": 0, "errors": 0, "lat_sum": 0.0, "lat_n": 0})
+        bucket = agg.setdefault(
+            char, {"attempts": 0, "errors": 0, "lat_sum": 0.0, "lat_sq": 0.0, "lat_n": 0}
+        )
         bucket["attempts"] += 1
         if not ks.correct:
             bucket["errors"] += 1
@@ -57,6 +59,7 @@ def _per_key_aggregates(keystrokes: list[KeystrokeIn]) -> dict[str, dict]:
             latency = float(max(0, ks.ts_offset_ms - prev_ts))
         if latency is not None:
             bucket["lat_sum"] += latency
+            bucket["lat_sq"] += latency * latency
             bucket["lat_n"] += 1
         prev_ts = ks.ts_offset_ms
     return agg
@@ -98,17 +101,22 @@ async def apply_keystrokes(
                 attempts=data["attempts"],
                 errors=data["errors"],
                 avg_latency_ms=Decimal(str(round(avg_latency, 2))) if avg_latency is not None else None,
+                latency_n=data["lat_n"],
+                latency_sq_sum=data["lat_sq"],
                 last_session_seq=seq,
             )
             db.add(stat)
         else:
-            # Weighted running mean over prior attempts + this batch's samples.
+            # Running mean/variance over latency samples (weighted by latency_n,
+            # which is exact — the first keystroke of a batch has no latency).
             if data["lat_n"]:
-                prior_n = stat.attempts
+                prior_n = stat.latency_n
                 prior_avg = float(stat.avg_latency_ms) if stat.avg_latency_ms is not None else 0.0
                 combined_n = prior_n + data["lat_n"]
                 new_avg = (prior_avg * prior_n + data["lat_sum"]) / combined_n if combined_n else prior_avg
                 stat.avg_latency_ms = Decimal(str(round(new_avg, 2)))
+                stat.latency_n = combined_n
+                stat.latency_sq_sum = float(stat.latency_sq_sum or 0.0) + data["lat_sq"]
             stat.attempts += data["attempts"]
             stat.errors += data["errors"]
             stat.last_session_seq = seq

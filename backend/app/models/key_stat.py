@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, func, text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, Numeric, String, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +26,10 @@ class KeyStat(Base):
     attempts: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
     errors: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
     avg_latency_ms: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
+    # Running latency spread for per-key consistency: sample count + sum of
+    # squares (consistency = 1 - stddev/mean of a key's inter-key latencies).
+    latency_n: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
+    latency_sq_sum: Mapped[float] = mapped_column(Float, server_default=text("0"), nullable=False)
     # Bookkeeping for the recency term of the adaptive score (Section 5).
     last_session_seq: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
