@@ -9,6 +9,14 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-04
+
+### Added
+- The app version is shown in the top bar (and on the login screen).
+- In-app release-notes viewer: click the version to see what's new per version,
+  grouped by New / Changed / Fixed. Sourced from `frontend/src/releaseNotes.ts`
+  (mirror of this file — keep both in sync on each release).
+
 ## [0.6.0] - 2026-07-04
 
 ### Added
@@ -107,7 +115,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/adi-infra/typeforge/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/adi-infra/typeforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adi-infra/typeforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/adi-infra/typeforge/compare/v0.3.0...v0.4.0

@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { authApi } from "../api/endpoints";
 import { useAuth, useClearAuth } from "../hooks/useAuth";
+import { ReleaseNotes } from "./ReleaseNotes";
 import "./app-shell.css";
 
 const links = [
@@ -15,6 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const clearAuth = useClearAuth();
   const navigate = useNavigate();
+  const [showReleases, setShowReleases] = useState(false);
 
   async function handleLogout() {
     try {
@@ -46,6 +48,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="tf-topbar-right">
+          <button
+            className="tf-version mono"
+            onClick={() => setShowReleases(true)}
+            title="What's new"
+          >
+            v{__APP_VERSION__}
+          </button>
           <span className="tf-user mono">{user?.username}</span>
           <button className="tf-logout" onClick={handleLogout}>
             Log out
@@ -53,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="tf-main">{children}</main>
+      <ReleaseNotes open={showReleases} onClose={() => setShowReleases(false)} />
     </div>
   );
 }
