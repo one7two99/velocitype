@@ -143,9 +143,13 @@ async def build_key_metrics(
 
 
 async def weakest_scored_keys(
-    db: AsyncSession, user_id: uuid.UUID, layout_id: str, n: int = 5
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    layout_id: str,
+    n: int = 5,
+    target_wpm: int | None = None,
 ) -> list[ScoredKey]:
     metrics = await build_key_metrics(db, user_id, layout_id)
     if not metrics:
         return []
-    return adaptive.weakest_keys(metrics, n=n)
+    return adaptive.weakest_keys(metrics, n=n, target_wpm=target_wpm)

@@ -17,6 +17,7 @@ class SessionStartRequest(BaseModel):
     duration_s: int | None = Field(default=None, ge=1, le=3600)
     word_count: int | None = Field(default=None, ge=1, le=1000)
     custom_text: str | None = Field(default=None, max_length=20_000)
+    target_wpm: int | None = Field(default=None, ge=10, le=300)
 
     @model_validator(mode="after")
     def _custom_requires_text(self) -> "SessionStartRequest":
@@ -45,6 +46,7 @@ class SessionCompleteRequest(BaseModel):
     accuracy: float = Field(ge=0.0, le=1.0)
     consistency: float = Field(ge=0.0, le=1.0)
     duration_s: int | None = Field(default=None, ge=0, le=3600)
+    target_wpm: int | None = Field(default=None, ge=10, le=300)
     # Optional inline keystroke batch; if omitted, post via /keystrokes first.
     keystrokes: list[KeystrokeIn] | None = Field(default=None, max_length=100_000)
 
