@@ -5,6 +5,7 @@ import type { TrendPoint } from "../api/types";
 import { TrendChart } from "../components/Charts";
 import { FerrisHeatmap } from "../components/FerrisHeatmap/FerrisHeatmap";
 import { Card, Spinner } from "../components/ui";
+import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings } from "../stores/settingsStore";
 import "./dashboard.css";
 
@@ -16,6 +17,7 @@ function fmtNum(v: number | null) {
 }
 
 export function DashboardPage() {
+  useNavHotkeys();
   const layoutId = useSettings((s) => s.layoutId);
 
   const overview = useQuery({
