@@ -9,6 +9,14 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-05
+
+### Added
+- Third key heatmap on the Dashboard: **consistency** — per-key timing steadiness
+  (`1 − stddev/mean` of a key's latencies; green = steady, red = erratic).
+- `key_stats` now tracks per-key latency spread (`latency_n`, `latency_sq_sum`,
+  migration `0002`); `/api/stats/keys` returns a `consistency` field per key.
+
 ## [0.9.0] - 2026-07-05
 
 ### Added
@@ -133,7 +141,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/adi-infra/typeforge/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/adi-infra/typeforge/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/adi-infra/typeforge/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/adi-infra/typeforge/compare/v0.6.0...v0.7.0

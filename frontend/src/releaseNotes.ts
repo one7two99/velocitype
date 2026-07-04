@@ -15,6 +15,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.10.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Third key heatmap on the Dashboard: consistency — how steady your timing is per key.",
+        "Green means steady, red means erratic (a key you sometimes hit fast and sometimes hesitate on).",
+      ],
+    },
+  },
+  {
     version: "0.9.0",
     date: "2026-07-05",
     sections: {
