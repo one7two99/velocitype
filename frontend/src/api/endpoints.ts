@@ -22,6 +22,15 @@ export const authApi = {
   logout: () => api.post<{ detail: string }>("/api/auth/logout"),
   refresh: () => api.post<{ detail: string }>("/api/auth/refresh"),
   me: () => api.get<User>("/api/auth/me"),
+  changePassword: (current_password: string, new_password: string) =>
+    api.patch<{ detail: string }>("/api/auth/password", {
+      current_password,
+      new_password,
+    }),
+  changeEmail: (password: string, email: string) =>
+    api.patch<User>("/api/auth/email", { password, email }),
+  deleteAccount: (password: string) =>
+    api.del<void>("/api/auth/me", { password }),
 };
 
 export const sessionsApi = {

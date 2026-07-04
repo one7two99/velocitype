@@ -109,10 +109,18 @@ function computeMetrics(
  * layer switches never steal focus. Timing starts on the first keystroke, not on
  * mount. Keystrokes are batched in memory and surfaced only on completion.
  */
+export interface TypingEngineOptions {
+  /** Timed mode: auto-finish the session once this many ms have elapsed since
+   *  the first keystroke. Omit for text-length completion. */
+  durationMs?: number;
+}
+
 export function useTypingEngine(
   lesson: string,
   onComplete?: (r: EngineResult) => void,
+  options?: TypingEngineOptions,
 ): TypingView {
+  const durationMs = options?.durationMs;
   const words = useMemo(
     () => lesson.trim().split(/\s+/).filter(Boolean),
     [lesson],
@@ -277,6 +285,12 @@ export function useTypingEngine(
       const start = startRef.current;
       if (start === null) return;
       const now = Date.now() - start;
+      // Timed mode: end the session when the configured duration elapses.
+      if (durationMs && now >= durationMs) {
+        setElapsedMs(durationMs);
+        finish();
+        return;
+      }
       setElapsedMs(now);
       const ks = keystrokesRef.current;
       const windowStart = now - LIVE_WINDOW_MS;
@@ -289,7 +303,7 @@ export function useTypingEngine(
       setLiveAccuracy(ks.length ? correct / ks.length : 1);
     }, LIVE_TICK_MS);
     return () => clearInterval(id);
-  }, [state.status]);
+  }, [state.status, durationMs, finish]);
 
   return {
     words,

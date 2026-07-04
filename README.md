@@ -1,0 +1,102 @@
+# TypeForge
+
+Self-hosted, adaptive touch-typing trainer for split-keyboard enthusiasts —
+combining keybr-style adaptive key learning with monkeytype-style session UX,
+built for the Ferris Sweep (Colemak-DH) from day one.
+
+- **Backend:** FastAPI (Python 3.12), async SQLAlchemy + asyncpg, PostgreSQL 16, Redis 7
+- **Frontend:** React 18 + TypeScript + Vite, Zustand, TanStack Query, recharts
+- **Edge:** Caddy 2 (reverse proxy, security headers, static SPA)
+- **Auth:** Argon2id, RS256 JWT in `httpOnly`/`SameSite=Strict` cookies, refresh-token rotation
+
+## Quick start
+
+Requires Docker (Compose v2) and OpenSSL.
+
+```bash
+cp .env.example .env
+./secrets/keygen.sh          # generates the RS256 JWT keypair into secrets/
+docker compose up --build
+```
+
+Then open **http://localhost:8080/** and register an account (there is no seeded
+user; the first registration logs you in). The API docs are at
+`http://localhost:8080/api/docs`.
+
+> Ports default to **8080 (HTTP)** / **8443 (HTTPS)** via `.env` to avoid clashing
+> with anything on 80/443. Use `http://` locally — the HTTPS port uses Caddy's
+> self-signed cert. Change `SITE_ADDRESS` / `HTTP_PORT` / `HTTPS_PORT` for a real
+> deployment.
+
+On startup the API waits for the database, runs Alembic migrations, and seeds the
+keyboard layouts (Ferris Sweep Colemak-DH + QWERTY). The `frontend` service builds
+the SPA into `frontend/dist`, which Caddy serves.
+
+## Architecture
+
+```
+Internet ─▶ Caddy (8080/8443)
+              ├─ /api/*  ─▶ FastAPI (8000) ─▶ PostgreSQL (5432)
+              │                             └▶ Redis (6379)
+              └─ /*      ─▶ SPA (frontend/dist)
+```
+
+Only Caddy is exposed to the host in production; Postgres/Redis stay on the
+internal Docker network. The app connects to Postgres as a least-privilege
+`typeforge_app` role (provisioned by `db/init/01-app-role.sh`).
+
+## Development
+
+**Backend tests** (need a reachable Postgres + Redis — the dev override exposes
+them on `localhost:5432` / `localhost:6379`):
+
+```bash
+cd backend
+pip install -r requirements.txt
+TEST_DATABASE_URL=postgresql+asyncpg://typeforge_app:dev_app_change_me@localhost:5432/typeforge \
+REDIS_URL=redis://:dev_redis_change_me@localhost:6379/15 \
+pytest
+```
+
+The suite creates its own tables and ephemeral JWT keys; if the test database is
+unreachable, integration tests skip rather than fail.
+
+**Frontend dev server** (hot reload; proxies `/api` to the Dockerized backend on
+:8080):
+
+```bash
+cd frontend
+npm install
+npm run dev            # http://localhost:5173
+npm run build          # type-check (tsc) + production bundle into dist/
+```
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push / PR:
+
+- **backend** — `pytest` against Postgres+Redis service containers, then `pip-audit`
+- **frontend** — `npm ci`, `npm run build` (incl. type-check), then `npm audit`
+
+## Project layout
+
+```
+backend/     FastAPI app (routers, models, schemas, engine, services), Alembic, tests
+frontend/    React SPA (components, hooks, pages, stores, api client)
+caddy/       Caddyfile (reverse proxy + security headers)
+db/init/     least-privilege role provisioning
+secrets/     keygen.sh (JWT keypair; *.pem gitignored)
+```
+
+## Adaptive engine
+
+The core differentiator lives in `backend/app/engine/adaptive.py` — a pure,
+unit-tested weighted key-pool scorer (`w_error·error_rate + w_latency·norm_latency
++ w_recency·recency`) that surfaces the weakest keys and generates lessons
+weighting them ~3× within realistic bigrams/trigrams.
+
+## Versioning
+
+Releases follow [Semantic Versioning](https://semver.org); see
+[CHANGELOG.md](./CHANGELOG.md). The full product spec is in
+`TypeForge_MVP_BriefingPack.md`.

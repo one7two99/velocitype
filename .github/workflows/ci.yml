@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (pytest + pip-audit)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: typeforge_app
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: typeforge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U typeforge_app -d typeforge"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      # conftest.py generates its own JWT keys and derives DATABASE_URL from
+      # TEST_DATABASE_URL; it creates tables via Base.metadata.create_all.
+      TEST_DATABASE_URL: postgresql+asyncpg://typeforge_app:ci_password@localhost:5432/typeforge
+      REDIS_URL: redis://localhost:6379/15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pip-audit
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Dependency audit (pip-audit)
+        run: pip-audit -r requirements.txt
+
+  frontend:
+    name: Frontend (build + npm audit)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check and build
+        run: npm run build
+
+      - name: Dependency audit (npm audit)
+        run: npm audit --audit-level=high

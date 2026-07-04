@@ -75,3 +75,96 @@ async def test_refresh_rotates_and_logout(client, unique_user):
     # After logout the session cookie is cleared; /me should now be unauthorized.
     me = await client.get("/api/auth/me")
     assert me.status_code == 401
+
+
+async def test_change_password(client, unique_user):
+    await client.post("/api/auth/register", json=unique_user)
+    new_password = "brand-new-password-99"
+
+    # Wrong current password is rejected.
+    bad = await client.patch(
+        "/api/auth/password",
+        json={"current_password": "not-my-password", "new_password": new_password},
+    )
+    assert bad.status_code == 401
+
+    ok = await client.patch(
+        "/api/auth/password",
+        json={"current_password": unique_user["password"], "new_password": new_password},
+    )
+    assert ok.status_code == 200
+    # Still authenticated (fresh cookies issued).
+    assert (await client.get("/api/auth/me")).status_code == 200
+
+    # New password works; old one does not.
+    await client.post("/api/auth/logout")
+    old = await client.post(
+        "/api/auth/login",
+        json={"username": unique_user["username"], "password": unique_user["password"]},
+    )
+    assert old.status_code == 401
+    new = await client.post(
+        "/api/auth/login",
+        json={"username": unique_user["username"], "password": new_password},
+    )
+    assert new.status_code == 200
+
+
+async def test_change_password_too_short(client, unique_user):
+    await client.post("/api/auth/register", json=unique_user)
+    resp = await client.patch(
+        "/api/auth/password",
+        json={"current_password": unique_user["password"], "new_password": "short"},
+    )
+    assert resp.status_code == 422
+
+
+async def test_change_email(client, unique_user):
+    await client.post("/api/auth/register", json=unique_user)
+    new_email = f"changed_{unique_user['username']}@example.com"
+    resp = await client.patch(
+        "/api/auth/email",
+        json={"password": unique_user["password"], "email": new_email},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["email"] == new_email
+    assert (await client.get("/api/auth/me")).json()["email"] == new_email
+
+
+async def test_change_email_conflict(client, unique_user):
+    # Register a second user whose email we'll collide with.
+    other = {
+        "username": unique_user["username"] + "b",
+        "email": "taken_" + unique_user["email"],
+        "password": unique_user["password"],
+    }
+    await client.post("/api/auth/register", json=other)
+    await client.post("/api/auth/logout")
+    await client.post("/api/auth/register", json=unique_user)
+
+    resp = await client.patch(
+        "/api/auth/email",
+        json={"password": unique_user["password"], "email": other["email"]},
+    )
+    assert resp.status_code == 409
+
+
+async def test_delete_account(client, unique_user):
+    await client.post("/api/auth/register", json=unique_user)
+
+    bad = await client.request(
+        "DELETE", "/api/auth/me", json={"password": "wrong-password-xx"}
+    )
+    assert bad.status_code == 401
+
+    ok = await client.request(
+        "DELETE", "/api/auth/me", json={"password": unique_user["password"]}
+    )
+    assert ok.status_code == 204
+    # Session cleared and the account is gone.
+    assert (await client.get("/api/auth/me")).status_code == 401
+    relogin = await client.post(
+        "/api/auth/login",
+        json={"username": unique_user["username"], "password": unique_user["password"]},
+    )
+    assert relogin.status_code == 401

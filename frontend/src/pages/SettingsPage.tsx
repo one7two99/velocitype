@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { lessonsApi, mcpApi } from "../api/endpoints";
 import type { ApiKeyCreated } from "../api/types";
+import { AccountSection } from "../components/AccountSection";
 import { Button, Card, Field, Input, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings, type ThemePref } from "../stores/settingsStore";
@@ -185,13 +186,7 @@ export function SettingsPage() {
         )}
       </Card>
 
-      <Card>
-        <h3 className="tf-card-title">Account</h3>
-        <p className="tf-settings-note">
-          Email/password changes and account deletion are planned — the backend
-          endpoints for these aren't part of the current MVP.
-        </p>
-      </Card>
+      <AccountSection />
     </div>
   );
 }
