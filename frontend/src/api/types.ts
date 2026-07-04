@@ -144,6 +144,29 @@ export interface ApiKeyCreated {
   api_key: string;
 }
 
+export interface CoachStatus {
+  reachable: boolean;
+  model: string;
+  model_ready: boolean;
+}
+
+export interface CoachAnalysis {
+  layout_id: string;
+  model: string;
+  generated_at: string;
+  analysis: string;
+}
+
+export interface CoachDrill {
+  layout_id: string;
+  model: string;
+  generated_at: string;
+  lesson: string;
+  word_count: number;
+  weak_keys: WeakKeyInfo[];
+  source: "ollama" | "fallback";
+}
+
 // RFC 7807 problem+json
 export interface ProblemDetail {
   type: string;

@@ -4,6 +4,7 @@ import { AppShell } from "./components/AppShell";
 import { Spinner } from "./components/ui";
 import { useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./pages/AuthPage";
+import { CoachPage } from "./pages/CoachPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TrainerPage } from "./pages/TrainerPage";
@@ -51,6 +52,14 @@ export default function App() {
         element={
           <Protected>
             <SettingsPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/coach"
+        element={
+          <Protected>
+            <CoachPage />
           </Protected>
         }
       />

@@ -2,6 +2,9 @@ import { api } from "./client";
 import type {
   ApiKeyCreated,
   ApiKeyInfo,
+  CoachAnalysis,
+  CoachDrill,
+  CoachStatus,
   KeyHeatmap,
   KeystrokeIn,
   LayoutList,
@@ -84,4 +87,12 @@ export const mcpApi = {
   createKey: (name: string) =>
     api.post<ApiKeyCreated>("/api/mcp/keys", { name }),
   revokeKey: (id: string) => api.del<void>(`/api/mcp/keys/${id}`),
+};
+
+export const coachApi = {
+  status: () => api.get<CoachStatus>("/api/coach/status"),
+  analyze: (layoutId: string) =>
+    api.post<CoachAnalysis>(`/api/coach/analyze?layout_id=${layoutId}`),
+  drill: (layoutId: string) =>
+    api.post<CoachDrill>(`/api/coach/drill?layout_id=${layoutId}`),
 };
