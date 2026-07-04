@@ -1,0 +1,75 @@
+.tf-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.tf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.tf-btn:hover:not(:disabled) { border-color: var(--accent); }
+.tf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tf-btn--primary {
+  background: var(--accent);
+  color: #0f1117;
+}
+.tf-btn--primary:hover:not(:disabled) { background: var(--accent-dim); border-color: transparent; }
+
+.tf-btn--ghost { background: transparent; border-color: var(--border); }
+.tf-btn--danger { background: transparent; border-color: var(--error); color: var(--error); }
+.tf-btn--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--error) 12%, transparent); }
+
+.tf-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.tf-field label { font-size: 0.8rem; color: var(--text-muted); }
+.tf-input {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.8rem;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+}
+.tf-input:focus { outline: none; border-color: var(--accent); }
+
+.tf-select {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+.tf-alert {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  border: 1px solid var(--error);
+  color: var(--error);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.tf-spinner {
+  width: 22px; height: 22px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: tf-spin 0.7s linear infinite;
+}
+@keyframes tf-spin { to { transform: rotate(360deg); } }

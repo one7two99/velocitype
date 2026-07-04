@@ -1,0 +1,35 @@
+.tf-session {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tf-metricsbar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+.tf-metricsbar b {
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+.tf-metrics-hint {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.tf-typing-wrap {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem 0;
+}
+
+@media (max-width: 560px) {
+  .tf-metrics-hint { display: none; }
+}
