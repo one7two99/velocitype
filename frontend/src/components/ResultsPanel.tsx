@@ -47,6 +47,9 @@ export function ResultsPanel({
       } else if (e.key === " " || e.code === "Space") {
         e.preventDefault();
         onRetry();
+      } else if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        navigate("/dashboard");
       }
     };
     document.addEventListener("keydown", onKey);
@@ -54,7 +57,7 @@ export function ResultsPanel({
       clearTimeout(arm);
       document.removeEventListener("keydown", onKey);
     };
-  }, [onNext, onRetry]);
+  }, [onNext, onRetry, navigate]);
 
   const stats = [
     { label: "WPM", value: Math.round(result.wpmNet).toString() },
@@ -106,7 +109,7 @@ export function ResultsPanel({
             Try Again <kbd className="tf-kbd">Space</kbd>
           </Button>
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            Dashboard
+            Dashboard <kbd className="tf-kbd">D</kbd>
           </Button>
         </div>
       </div>
