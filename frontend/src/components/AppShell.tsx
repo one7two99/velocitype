@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { authApi } from "../api/endpoints";
-import { useAuth, useInvalidateAuth } from "../hooks/useAuth";
+import { useAuth, useClearAuth } from "../hooks/useAuth";
 import "./app-shell.css";
 
 const links = [
@@ -12,14 +12,14 @@ const links = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const invalidate = useInvalidateAuth();
+  const clearAuth = useClearAuth();
   const navigate = useNavigate();
 
   async function handleLogout() {
     try {
       await authApi.logout();
     } finally {
-      invalidate();
+      clearAuth();
       navigate("/login", { replace: true });
     }
   }

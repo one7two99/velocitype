@@ -12,15 +12,22 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Resolve the current user, treating a 401 as "logged out" (null) rather than an
+// error. This matters because React Query retains the last successful `data` on
+// error — without this, a 401 after logout would leave the stale user in place.
+async function fetchMe(): Promise<User | null> {
+  try {
+    return await authApi.me();
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null;
+    throw err;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["me"],
-    queryFn: authApi.me,
-    retry: (count, err) => {
-      // Don't retry a legitimate 401 (just not logged in).
-      if (err instanceof ApiError && err.status === 401) return false;
-      return count < 2;
-    },
+    queryFn: fetchMe,
     staleTime: 60_000,
   });
 
@@ -39,8 +46,14 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-/** Invalidate the cached user (after login/logout). */
+/** Refetch the cached user (after login/register). */
 export function useInvalidateAuth() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: ["me"] });
+}
+
+/** Immediately clear the cached user (after logout / account deletion). */
+export function useClearAuth() {
+  const qc = useQueryClient();
+  return () => qc.setQueryData(["me"], null);
 }
