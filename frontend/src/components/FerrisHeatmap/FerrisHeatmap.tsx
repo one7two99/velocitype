@@ -5,6 +5,10 @@ import "./heatmap.css";
 
 // error rate at which a key reaches full heat
 const HEAT_CEIL = 0.3;
+// minimum attempts before a key's speed is considered meaningful
+const SPEED_MIN_ATTEMPTS = 5;
+
+export type HeatMetric = "error" | "speed";
 
 const DISPLAY: Record<string, string> = {
   " ": "␣",
@@ -14,13 +18,61 @@ const DISPLAY: Record<string, string> = {
   "/": "/",
 };
 
+function keyWpm(cell: KeyHeatCell): number | null {
+  if (!cell.avg_latency_ms || cell.avg_latency_ms <= 0) return null;
+  return 12000 / cell.avg_latency_ms;
+}
+
+// Per-key overlay colour. Returns null for keys without meaningful data (neutral).
+function overlayFor(
+  cell: KeyHeatCell | undefined,
+  metric: HeatMetric,
+  target: number,
+): { fill: string; opacity: number } | null {
+  if (!cell || cell.attempts <= 0) return null;
+
+  if (metric === "error") {
+    const intensity = Math.min(1, cell.error_rate / HEAT_CEIL);
+    if (intensity <= 0) return { fill: "var(--correct)", opacity: 0.25 };
+    return { fill: "var(--heat-max)", opacity: 0.12 + intensity * 0.88 };
+  }
+
+  // speed: green at/above target, red below (keybr-style)
+  const kw = keyWpm(cell);
+  if (kw === null || cell.attempts < SPEED_MIN_ATTEMPTS) return null;
+  const ratio = kw / target;
+  if (ratio >= 1) {
+    return { fill: "var(--correct)", opacity: 0.35 + Math.min(1, (ratio - 1) / 0.5) * 0.5 };
+  }
+  return { fill: "var(--heat-max)", opacity: 0.12 + (1 - ratio) * 0.88 };
+}
+
+function tooltipFor(cell: KeyHeatCell, metric: HeatMetric, target: number): string {
+  if (metric === "speed") {
+    const kw = keyWpm(cell);
+    return kw === null
+      ? `no speed data · target ${target}`
+      : `${Math.round(kw)} wpm · target ${target}`;
+  }
+  const ms = cell.avg_latency_ms != null ? ` · ${Math.round(cell.avg_latency_ms)}ms` : "";
+  return `${(cell.error_rate * 100).toFixed(1)}% errors${ms}`;
+}
+
 interface Props {
   layout: LayoutInfo;
   cells: KeyHeatCell[];
+  metric?: HeatMetric;
+  target?: number;
   compact?: boolean;
 }
 
-export function FerrisHeatmap({ layout, cells, compact = false }: Props) {
+export function FerrisHeatmap({
+  layout,
+  cells,
+  metric = "error",
+  target = 40,
+  compact = false,
+}: Props) {
   const { keys, width, height, thumbs } = useMemo(
     () => buildPositions(layout),
     [layout],
@@ -46,36 +98,27 @@ export function FerrisHeatmap({ layout, cells, compact = false }: Props) {
         width={width * scale}
         height={height * scale}
         role="img"
-        aria-label="Keyboard heatmap"
+        aria-label={`Keyboard heatmap by ${metric}`}
       >
         {keys.map((k) => {
           const cell = byChar.get(k.char);
-          const rate = cell?.attempts ? cell.error_rate : 0;
-          const intensity = Math.min(1, rate / HEAT_CEIL);
+          const overlay = overlayFor(cell, metric, target);
           return (
             <g
               key={k.char}
               transform={`translate(${k.x},${k.y})`}
-              onMouseEnter={() =>
-                cell &&
-                setHover({ x: k.x, y: k.y, cell })
-              }
+              onMouseEnter={() => cell && setHover({ x: k.x, y: k.y, cell })}
               onMouseLeave={() => setHover(null)}
               style={{ cursor: cell?.attempts ? "pointer" : "default" }}
             >
-              <rect
-                width={KEY_SIZE}
-                height={KEY_SIZE}
-                rx={7}
-                className="tf-key-base"
-              />
-              {intensity > 0 && (
+              <rect width={KEY_SIZE} height={KEY_SIZE} rx={7} className="tf-key-base" />
+              {overlay && (
                 <rect
                   width={KEY_SIZE}
                   height={KEY_SIZE}
                   rx={7}
-                  className="tf-key-heat"
-                  style={{ opacity: 0.12 + intensity * 0.88 }}
+                  className="tf-key-overlay"
+                  style={{ fill: overlay.fill, opacity: overlay.opacity }}
                 />
               )}
               <text
@@ -117,17 +160,11 @@ export function FerrisHeatmap({ layout, cells, compact = false }: Props) {
       {hover && !compact && (
         <div
           className="tf-heat-tooltip mono"
-          style={{
-            left: hover.x + KEY_SIZE / 2,
-            top: hover.y - 6,
-          }}
+          style={{ left: hover.x + KEY_SIZE / 2, top: hover.y - 6 }}
         >
           <strong>{DISPLAY[hover.cell.character] ?? hover.cell.character}</strong>
           {" · "}
-          {(hover.cell.error_rate * 100).toFixed(1)}% errors
-          {hover.cell.avg_latency_ms != null && (
-            <> · {Math.round(hover.cell.avg_latency_ms)}ms</>
-          )}
+          {tooltipFor(hover.cell, metric, target)}
         </div>
       )}
     </div>

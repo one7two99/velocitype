@@ -8,8 +8,10 @@
   stroke-width: 1;
 }
 
-.tf-key-heat {
-  fill: var(--heat-max);
+/* Overlay fill/opacity is set inline per key (varies by metric: red for
+   errors/slow, green for at/above target). */
+.tf-key-overlay {
+  pointer-events: none;
 }
 
 .tf-key-label {
