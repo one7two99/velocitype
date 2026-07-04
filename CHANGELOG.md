@@ -9,6 +9,13 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-05
+
+### Added
+- Dashboard now shows two key heatmaps: one coloured by accuracy (error rate) and
+  one by speed. The speed heatmap colours each key relative to the target WPM
+  (green at/above target, red below), with per-key WPM in the tooltip.
+
 ## [0.8.0] - 2026-07-04
 
 ### Added
@@ -126,7 +133,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/adi-infra/typeforge/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/adi-infra/typeforge/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/adi-infra/typeforge/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/adi-infra/typeforge/compare/v0.5.0...v0.6.0
