@@ -15,6 +15,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.8.0",
+    date: "2026-07-04",
+    sections: {
+      added: [
+        "Target speed (WPM) setting, keybr-style: choose the speed you're aiming for.",
+        "The adaptive engine now prioritises keys slower than your target and 'graduates' them once they reach it.",
+        "Results show your WPM against the target; the Dashboard adds a target line and a 'Keys @ target' count.",
+      ],
+    },
+  },
+  {
     version: "0.7.0",
     date: "2026-07-04",
     sections: {

@@ -35,6 +35,29 @@
   font-weight: 600;
 }
 
+.tf-range-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.tf-range {
+  flex: 1;
+  max-width: 320px;
+  accent-color: var(--accent);
+  height: 4px;
+  cursor: pointer;
+}
+.tf-range-value {
+  color: var(--accent);
+  font-weight: 700;
+  min-width: 2.5ch;
+  text-align: right;
+}
+.tf-range-hint {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
 .tf-key-create {
   display: flex;
   gap: 0.6rem;

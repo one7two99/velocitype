@@ -22,13 +22,16 @@ async def next_lesson(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
     layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+    target_wpm: int | None = Query(default=None, ge=10, le=300),
 ) -> NextLessonResponse:
     if get_layout(layout_id) is None:
         raise ProblemException(
             status_code=422, title="Unprocessable Entity",
             detail=f"Unknown layout '{layout_id}'.", type_="about:unknown-layout",
         )
-    lesson, weak = await generate_adaptive_lesson(db, user.id, layout_id)
+    lesson, weak = await generate_adaptive_lesson(
+        db, user.id, layout_id, target_wpm=target_wpm
+    )
     return NextLessonResponse(
         layout_id=layout_id,
         lesson=lesson,

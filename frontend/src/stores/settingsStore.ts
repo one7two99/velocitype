@@ -10,11 +10,13 @@ interface SettingsState {
   goal: SessionGoal;
   durationS: number; // 15 | 30 | 60 | 120
   wordCount: number; // 10 | 25 | 50 | 100
+  targetWpm: number; // keybr-style target speed keys are measured against
   setTheme: (t: ThemePref) => void;
   setLayoutId: (id: string) => void;
   setGoal: (g: SessionGoal) => void;
   setDurationS: (d: number) => void;
   setWordCount: (w: number) => void;
+  setTargetWpm: (t: number) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -25,11 +27,13 @@ export const useSettings = create<SettingsState>()(
       goal: "time",
       durationS: 60,
       wordCount: 25,
+      targetWpm: 40,
       setTheme: (theme) => set({ theme }),
       setLayoutId: (layoutId) => set({ layoutId }),
       setGoal: (goal) => set({ goal }),
       setDurationS: (durationS) => set({ durationS }),
       setWordCount: (wordCount) => set({ wordCount }),
+      setTargetWpm: (targetWpm) => set({ targetWpm }),
     }),
     { name: "typeforge-settings" },
   ),

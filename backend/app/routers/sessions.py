@@ -72,10 +72,12 @@ async def start_session(
     await db.commit()
     await db.refresh(session)
 
-    # Size the lesson to the session goal so timed mode doesn't run out of text.
+    # Size the lesson to the session goal so timed mode doesn't run out of text;
+    # target_wpm makes key selection prioritise keys below the target speed.
     sizing = {
         "target_seconds": payload.duration_s,
         "min_words": payload.word_count,
+        "target_wpm": payload.target_wpm,
     }
 
     weak: list[WeakKeyInfo] = []
@@ -127,7 +129,9 @@ async def complete_session(
     await db.commit()
     await db.refresh(session)
 
-    scored = await weakest_scored_keys(db, user.id, session.layout_id, n=5)
+    scored = await weakest_scored_keys(
+        db, user.id, session.layout_id, n=5, target_wpm=payload.target_wpm
+    )
     weak = [
         WeakKeyInfo(char=s.character, error_rate=round(s.error_rate, 4))
         for s in scored if s.score > 0.0

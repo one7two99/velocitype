@@ -2,6 +2,7 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,7 +19,13 @@ function fmtDate(d: string) {
   return d.slice(5); // MM-DD
 }
 
-export function TrendChart({ points }: { points: TrendPoint[] }) {
+export function TrendChart({
+  points,
+  target,
+}: {
+  points: TrendPoint[];
+  target?: number;
+}) {
   const data = points.map((p) => ({
     date: fmtDate(p.date),
     wpm: p.wpm ?? null,
@@ -59,6 +66,16 @@ export function TrendChart({ points }: { points: TrendPoint[] }) {
           }}
           labelStyle={{ color: "var(--text-muted)" }}
         />
+        {target ? (
+          <ReferenceLine
+            yAxisId="wpm"
+            y={target}
+            stroke={WPM}
+            strokeDasharray="4 4"
+            strokeOpacity={0.6}
+            label={{ value: `target ${target}`, position: "insideTopRight", fill: AXIS, fontSize: 11 }}
+          />
+        ) : null}
         <Line
           yAxisId="wpm"
           type="monotone"

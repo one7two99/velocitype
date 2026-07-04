@@ -59,6 +59,38 @@ def test_graduation_criteria():
     assert adaptive.is_graduated(2) is False
 
 
+# ── Target-WPM (keybr-style) ─────────────────────────────────────────────────
+def test_key_wpm_from_latency():
+    assert adaptive.key_wpm(KeyMetric("a", avg_latency_ms=200)) == pytest.approx(60.0)
+    assert adaptive.key_wpm(KeyMetric("a", avg_latency_ms=300)) == pytest.approx(40.0)
+    assert adaptive.key_wpm(KeyMetric("a", avg_latency_ms=None)) is None
+
+
+def test_normalized_latency_to_target():
+    at_target = KeyMetric("a", attempts=5, avg_latency_ms=200)   # 60 wpm
+    slow = KeyMetric("b", attempts=5, avg_latency_ms=400)        # 30 wpm
+    assert adaptive.normalized_latency_to_target(at_target, 60) == pytest.approx(0.0)
+    assert adaptive.normalized_latency_to_target(slow, 60) == pytest.approx(0.5)
+
+
+def test_weakest_keys_prioritizes_below_target():
+    # 'a' is fast but a bit error-prone; 'b' is accurate but slow vs target.
+    metrics = [
+        KeyMetric("a", attempts=100, errors=2, avg_latency_ms=150),   # 80 wpm
+        KeyMetric("b", attempts=100, errors=1, avg_latency_ms=500),   # 24 wpm
+    ]
+    # Without a target, personal-median latency barely separates them.
+    weak_target = adaptive.weakest_keys(metrics, n=1, target_wpm=60)
+    assert weak_target[0].character == "b"  # slow-vs-target key surfaces
+
+
+def test_graduation_with_target():
+    fast = KeyMetric("a", attempts=100, errors=1, avg_latency_ms=180)  # ~67 wpm
+    slow = KeyMetric("b", attempts=100, errors=1, avg_latency_ms=300)  # 40 wpm
+    assert adaptive.meets_graduation_criteria(fast, median_latency_ms=0, target_wpm=60) is True
+    assert adaptive.meets_graduation_criteria(slow, median_latency_ms=0, target_wpm=60) is False
+
+
 # ── Lesson generation ────────────────────────────────────────────────────────
 def test_lesson_meets_minimum_length():
     rng = random.Random(1)

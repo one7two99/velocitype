@@ -116,6 +116,25 @@ export function SettingsPage() {
             </div>
           </Field>
         )}
+
+        <Field label={`Target speed — ${s.targetWpm} WPM`}>
+          <div className="tf-range-row">
+            <input
+              type="range"
+              className="tf-range"
+              min={20}
+              max={150}
+              step={5}
+              value={s.targetWpm}
+              onChange={(e) => s.setTargetWpm(Number(e.target.value))}
+            />
+            <span className="tf-range-value mono">{s.targetWpm}</span>
+          </div>
+          <p className="tf-settings-note tf-range-hint">
+            Keys are measured against this speed — slower keys get prioritised and
+            "graduate" once they reach the target.
+          </p>
+        </Field>
       </Card>
 
       <Card>

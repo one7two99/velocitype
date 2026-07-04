@@ -43,6 +43,7 @@ export const sessionsApi = {
     duration_s?: number | null;
     word_count?: number | null;
     custom_text?: string | null;
+    target_wpm?: number | null;
   }) => api.post<SessionStartResponse>("/api/sessions/start", params),
   keystrokes: (sessionId: string, keystrokes: KeystrokeIn[]) =>
     api.post<{ saved: number; keys_updated: number }>(
@@ -57,6 +58,7 @@ export const sessionsApi = {
       accuracy: number;
       consistency: number;
       duration_s?: number | null;
+      target_wpm?: number | null;
     },
   ) =>
     api.post<SessionCompleteResponse>(
@@ -77,8 +79,11 @@ export const statsApi = {
 };
 
 export const lessonsApi = {
-  next: (layoutId: string) =>
-    api.get<NextLessonResponse>(`/api/lessons/next?layout_id=${layoutId}`),
+  next: (layoutId: string, targetWpm?: number) =>
+    api.get<NextLessonResponse>(
+      `/api/lessons/next?layout_id=${layoutId}` +
+        (targetWpm ? `&target_wpm=${targetWpm}` : ""),
+    ),
   layouts: () => api.get<LayoutList>("/api/lessons/layouts"),
 };
 

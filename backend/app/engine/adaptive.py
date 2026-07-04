@@ -31,6 +31,9 @@ TARGET_LESSON_SECONDS = 60
 ASSUMED_LEARNER_WPM = 40  # conservative; used to convert seconds -> word count
 WEAK_KEY_FREQUENCY_MULTIPLIER = 3
 
+# Target speed (keybr-style). Default equals the assumed learner speed.
+DEFAULT_TARGET_WPM = 40
+
 # Graduation thresholds (Section 5)
 GRADUATION_MAX_ERROR_RATE = 0.03
 GRADUATION_LATENCY_FACTOR = 1.3
@@ -84,6 +87,25 @@ def normalized_latency(m: KeyMetric, median_latency_ms: float) -> float:
     return max(0.0, min(1.0, ratio - 1.0))
 
 
+def key_wpm(m: KeyMetric) -> float | None:
+    """Per-key typing speed in WPM derived from its mean inter-key latency.
+    WPM = (chars/5) / minutes, and one char takes avg_latency_ms → 12000/latency."""
+    if not m.avg_latency_ms or m.avg_latency_ms <= 0:
+        return None
+    return 12000.0 / m.avg_latency_ms
+
+
+def normalized_latency_to_target(m: KeyMetric, target_wpm: float) -> float:
+    """How far a key's speed falls short of the target (keybr-style). A key at or
+    above the target scores 0; a much slower key approaches 1."""
+    if target_wpm <= 0:
+        return 0.0
+    kw = key_wpm(m)
+    if kw is None:
+        return 0.0
+    return max(0.0, min(1.0, (target_wpm - kw) / target_wpm))
+
+
 def recency_penalty(m: KeyMetric) -> float:
     """Small boost for neglected keys (unseen for > RECENCY_GRACE_SESSIONS)."""
     overdue = m.sessions_since_seen - RECENCY_GRACE_SESSIONS
@@ -99,10 +121,20 @@ def personal_median_latency(metrics: list[KeyMetric]) -> float:
     return float(_median(latencies))
 
 
-def key_score(m: KeyMetric, median_latency_ms: float, weights: Weights | None = None) -> ScoredKey:
+def key_score(
+    m: KeyMetric,
+    median_latency_ms: float,
+    weights: Weights | None = None,
+    target_wpm: int | None = None,
+) -> ScoredKey:
     w = weights or Weights()
     er = error_rate(m)
-    nl = normalized_latency(m, median_latency_ms)
+    # With a target speed set (keybr-style), the latency term measures shortfall
+    # against the target; otherwise it's relative to the user's personal median.
+    if target_wpm:
+        nl = normalized_latency_to_target(m, target_wpm)
+    else:
+        nl = normalized_latency(m, median_latency_ms)
     rp = recency_penalty(m)
     score = w.error * er + w.latency * nl + w.recency * rp
     return ScoredKey(
@@ -114,23 +146,38 @@ def key_score(m: KeyMetric, median_latency_ms: float, weights: Weights | None = 
     )
 
 
-def rank_keys(metrics: list[KeyMetric], weights: Weights | None = None) -> list[ScoredKey]:
+def rank_keys(
+    metrics: list[KeyMetric],
+    weights: Weights | None = None,
+    target_wpm: int | None = None,
+) -> list[ScoredKey]:
     """Score every key and return them worst-first (highest score = weakest)."""
     med = personal_median_latency(metrics)
-    scored = [key_score(m, med, weights) for m in metrics]
+    scored = [key_score(m, med, weights, target_wpm) for m in metrics]
     scored.sort(key=lambda s: s.score, reverse=True)
     return scored
 
 
-def weakest_keys(metrics: list[KeyMetric], n: int = 5, weights: Weights | None = None) -> list[ScoredKey]:
+def weakest_keys(
+    metrics: list[KeyMetric],
+    n: int = 5,
+    weights: Weights | None = None,
+    target_wpm: int | None = None,
+) -> list[ScoredKey]:
     """The user's ``n`` weakest keys by score (Section 5, step 1)."""
-    return rank_keys(metrics, weights)[:n]
+    return rank_keys(metrics, weights, target_wpm)[:n]
 
 
 # ── Graduation (Section 5, step 5) ───────────────────────────────────────────
-def meets_graduation_criteria(m: KeyMetric, median_latency_ms: float) -> bool:
+def meets_graduation_criteria(
+    m: KeyMetric, median_latency_ms: float, target_wpm: int | None = None
+) -> bool:
     if error_rate(m) >= GRADUATION_MAX_ERROR_RATE:
         return False
+    if target_wpm:
+        # Target-based: the key must reach the target speed to graduate.
+        kw = key_wpm(m)
+        return kw is not None and kw >= target_wpm
     if m.avg_latency_ms and median_latency_ms > 0:
         if m.avg_latency_ms >= GRADUATION_LATENCY_FACTOR * median_latency_ms:
             return False
