@@ -72,13 +72,23 @@ async def start_session(
     await db.commit()
     await db.refresh(session)
 
+    # Size the lesson to the session goal so timed mode doesn't run out of text.
+    sizing = {
+        "target_seconds": payload.duration_s,
+        "min_words": payload.word_count,
+    }
+
     weak: list[WeakKeyInfo] = []
     if payload.mode == "custom":
         lesson = payload.custom_text or ""
     elif payload.mode == "adaptive":
-        lesson, weak = await generate_adaptive_lesson(db, user.id, payload.layout_id)
+        lesson, weak = await generate_adaptive_lesson(
+            db, user.id, payload.layout_id, **sizing
+        )
     else:  # fixed_text — a general, non-adaptive lesson over the whole layout
-        lesson, _ = await generate_adaptive_lesson(db, user.id, payload.layout_id)
+        lesson, _ = await generate_adaptive_lesson(
+            db, user.id, payload.layout_id, **sizing
+        )
 
     return SessionStartResponse(
         session_id=session.id,

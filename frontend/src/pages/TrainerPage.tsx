@@ -107,7 +107,12 @@ export function TrainerPage() {
 
   return (
     <>
-      <TypingSession key={runId} lesson={lesson} onComplete={handleComplete} />
+      <TypingSession
+        key={runId}
+        lesson={lesson}
+        onComplete={handleComplete}
+        durationMs={goal === "time" ? durationS * 1000 : undefined}
+      />
       {phase === "results" && result && (
         <ResultsPanel
           result={result}

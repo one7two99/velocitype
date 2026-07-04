@@ -17,9 +17,14 @@ async def generate_adaptive_lesson(
     user_id: uuid.UUID,
     layout_id: str,
     rng: random.Random | None = None,
+    target_seconds: int | None = None,
+    min_words: int | None = None,
 ) -> tuple[str, list[WeakKeyInfo]]:
     """Return (lesson_text, weak_keys). Falls back to a general lesson over the
-    whole layout when the user has no history yet."""
+    whole layout when the user has no history yet.
+
+    ``target_seconds`` / ``min_words`` size the lesson (e.g. timed mode needs
+    enough text that the clock, not the text, ends the session)."""
     layout = get_layout(layout_id)
     if layout is None:
         raise ValueError(f"unknown layout '{layout_id}'")
@@ -30,10 +35,18 @@ async def generate_adaptive_lesson(
     weak_scored = [s for s in scored if s.score > 0.0]
     weak_chars = [s.character for s in weak_scored]
 
+    gen_kwargs: dict = {}
+    if target_seconds is not None:
+        # Generate ~50% extra so fast typists don't run out before time.
+        gen_kwargs["target_seconds"] = int(target_seconds * 1.5)
+    if min_words is not None:
+        gen_kwargs["min_words"] = min_words
+
     lesson = adaptive.generate_lesson(
         weak_keys=weak_chars,
         layout_characters=layout.characters,
         rng=rng,
+        **gen_kwargs,
     )
     weak_info = [
         WeakKeyInfo(
