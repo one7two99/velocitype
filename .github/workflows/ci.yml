@@ -52,6 +52,13 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
 
+      - name: Version consistency (backend == frontend)
+        run: |
+          py=$(python -c "import re;print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', open('app/version.py').read()).group(1))")
+          fe=$(python -c "import json;print(json.load(open('../frontend/package.json'))['version'])")
+          echo "backend=$py frontend=$fe"
+          test "$py" = "$fe"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
