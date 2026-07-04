@@ -69,6 +69,16 @@
   flex-wrap: wrap;
 }
 
+.tf-kbd {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  opacity: 0.65;
+}
+
 @media (max-width: 480px) {
   .tf-results-stats { grid-template-columns: repeat(2, 1fr); }
 }
