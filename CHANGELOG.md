@@ -9,6 +9,25 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-04
+
+### Added
+- Account management: change password (`PATCH /api/auth/password`, rotates all
+  refresh tokens), change email (`PATCH /api/auth/email`, 409 on duplicate), and
+  delete account (`DELETE /api/auth/me`) — all requiring re-authentication — plus
+  the corresponding forms in Settings.
+- Timed session mode: the trainer now auto-finishes when the configured duration
+  elapses, with a live countdown; lessons are sized to the session goal so the
+  clock (not the text) ends timed runs.
+- Continuous integration (`.github/workflows/ci.yml`): backend `pytest` +
+  `pip-audit`, frontend build + `npm audit`.
+- Project `README.md`.
+
+### Fixed
+- Authentication state no longer goes stale after logout / account deletion: a
+  401 from `/api/auth/me` is now treated as logged-out instead of retaining the
+  previously cached user.
+
 ## [0.4.0] - 2026-07-04
 
 ### Added
@@ -74,7 +93,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/adi-infra/typeforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/adi-infra/typeforge/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/adi-infra/typeforge/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/adi-infra/typeforge/compare/v0.2.0...v0.2.1
