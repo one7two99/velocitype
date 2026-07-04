@@ -1,1 +1,25 @@
 .claude/settings.local.json
+
+# Env & secrets (Section 2: never commit)
+.env
+.env.*
+!.env.example
+secrets/*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Frontend (later)
+node_modules/
+frontend/dist/*
+!frontend/dist/.gitkeep
+
+# OS
+.DS_Store
