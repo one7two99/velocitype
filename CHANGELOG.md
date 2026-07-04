@@ -9,6 +9,19 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-05
+
+### Added
+- `GET /api/version` and a `version` field in `GET /api/health`.
+- Documented versioning policy in the README (declared public surface, MAJOR/
+  MINOR/PATCH rules, pre-1.0 caveat, 1.0.0 criterion, release process).
+- CI check enforcing that `backend/app/version.py` and `frontend/package.json`
+  versions match.
+
+### Fixed
+- The API self-reported version was hardcoded to `1.0.0` in the OpenAPI docs; it
+  now reflects the real release version from a single source (`app/version.py`).
+
 ## [0.10.0] - 2026-07-05
 
 ### Added
@@ -141,7 +154,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/adi-infra/typeforge/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/adi-infra/typeforge/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/adi-infra/typeforge/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/adi-infra/typeforge/compare/v0.7.0...v0.8.0
