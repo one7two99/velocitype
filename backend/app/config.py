@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     # ── Adaptive engine window ──────────────────────────────────────────────
     adaptive_session_window: int = Field(default=10)
 
+    # ── Ollama (local LLM coaching) ─────────────────────────────────────────
+    ollama_base_url: str = Field(default="http://ollama:11434")
+    ollama_model: str = Field(default="qwen3.5:4b")
+    ollama_timeout_s: float = Field(default=240.0)
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def cors_origin_list(self) -> list[str]:
