@@ -19,6 +19,7 @@ function fmtNum(v: number | null) {
 export function DashboardPage() {
   useNavHotkeys();
   const layoutId = useSettings((s) => s.layoutId);
+  const targetWpm = useSettings((s) => s.targetWpm);
 
   const overview = useQuery({
     queryKey: ["stats", "overview", layoutId],
@@ -67,10 +68,20 @@ export function DashboardPage() {
   }
 
   const o = overview.data!;
+
+  // Keys at target speed (keybr-style): key_wpm = 12000 / avg_latency_ms.
+  const measuredKeys = (heat.data?.keys ?? []).filter(
+    (k) => k.attempts >= 5 && k.avg_latency_ms,
+  );
+  const keysAtTarget = measuredKeys.filter(
+    (k) => 12000 / (k.avg_latency_ms as number) >= targetWpm,
+  ).length;
+
   const tiles = [
     { label: "Best WPM", value: fmtNum(o.best_wpm) },
     { label: "Avg WPM (30d)", value: fmtNum(o.avg_wpm_30d) },
     { label: "Avg Acc (30d)", value: fmtPct(o.avg_accuracy_30d) },
+    { label: `Keys @ ${targetWpm}`, value: `${keysAtTarget}/${measuredKeys.length}` },
     { label: "Sessions", value: o.total_sessions.toString() },
     { label: "Time", value: `${Math.round(o.total_time_minutes)}m` },
   ];
@@ -89,7 +100,7 @@ export function DashboardPage() {
       <div className="tf-dash-grid">
         <Card>
           <h3 className="tf-card-title">30-Day Trend</h3>
-          <TrendChart points={trend} />
+          <TrendChart points={trend} target={targetWpm} />
         </Card>
 
         <Card>

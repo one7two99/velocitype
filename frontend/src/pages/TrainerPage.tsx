@@ -12,7 +12,7 @@ import { useSettings } from "../stores/settingsStore";
 type Phase = "loading" | "typing" | "results" | "error";
 
 export function TrainerPage() {
-  const { layoutId, goal, durationS, wordCount } = useSettings();
+  const { layoutId, goal, durationS, wordCount, targetWpm } = useSettings();
   const pendingDrill = useCoachStore((s) => s.pendingDrill);
   const setPendingDrill = useCoachStore((s) => s.setPendingDrill);
 
@@ -44,6 +44,7 @@ export function TrainerPage() {
               mode: "adaptive",
               duration_s: goal === "time" ? durationS : null,
               word_count: goal === "words" ? wordCount : null,
+              target_wpm: targetWpm,
             });
         setSessionId(resp.session_id);
         setLesson(opts?.drill ?? opts?.reuseLesson ?? resp.lesson);
@@ -55,7 +56,7 @@ export function TrainerPage() {
         setPhase("error");
       }
     },
-    [layoutId, goal, durationS, wordCount],
+    [layoutId, goal, durationS, wordCount, targetWpm],
   );
 
   // Start the first session on mount and whenever layout/goal changes. A drill
@@ -69,7 +70,7 @@ export function TrainerPage() {
       startSession();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layoutId, goal, durationS, wordCount]);
+  }, [layoutId, goal, durationS, wordCount, targetWpm]);
 
   const handleComplete = useCallback(
     async (r: EngineResult) => {
@@ -89,6 +90,7 @@ export function TrainerPage() {
           accuracy: r.accuracy,
           consistency: r.consistency,
           duration_s: r.durationS,
+          target_wpm: targetWpm,
         });
         setServerWeak(resp.weak_keys);
       } catch (err) {
@@ -99,7 +101,7 @@ export function TrainerPage() {
         setSaving(false);
       }
     },
-    [sessionId, startWeak],
+    [sessionId, startWeak, targetWpm],
   );
 
   if (phase === "loading") {

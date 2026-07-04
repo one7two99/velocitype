@@ -50,6 +50,15 @@
   letter-spacing: 0.08em;
   margin-top: 0.2rem;
 }
+.tf-result-target {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+.tf-result-target--hit {
+  color: var(--correct);
+  font-weight: 600;
+}
 
 .tf-results-spark { margin-bottom: 1rem; }
 

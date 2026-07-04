@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WeakKeyInfo } from "../api/types";
 import type { EngineResult } from "../hooks/useTypingEngine";
+import { useSettings } from "../stores/settingsStore";
 import { Sparkline } from "./Charts";
 import { Button } from "./ui";
 import "./results.css";
@@ -59,8 +60,12 @@ export function ResultsPanel({
     };
   }, [onNext, onRetry, navigate]);
 
+  const targetWpm = useSettings((s) => s.targetWpm);
+  const wpm = Math.round(result.wpmNet);
+  const reachedTarget = result.wpmNet >= targetWpm;
+
   const stats = [
-    { label: "WPM", value: Math.round(result.wpmNet).toString() },
+    { label: "WPM", value: wpm.toString() },
     { label: "ACC", value: `${(result.accuracy * 100).toFixed(1)}%` },
     { label: "CONSISTENCY", value: `${(result.consistency * 100).toFixed(1)}%` },
     { label: "TIME", value: fmtTime(result.durationS) },
@@ -76,6 +81,13 @@ export function ResultsPanel({
             <div key={s.label} className="tf-result-stat">
               <div className="tf-result-value mono">{s.value}</div>
               <div className="tf-result-label">{s.label}</div>
+              {s.label === "WPM" && (
+                <div
+                  className={`tf-result-target${reachedTarget ? " tf-result-target--hit" : ""}`}
+                >
+                  {reachedTarget ? "✓ " : ""}target {targetWpm}
+                </div>
+              )}
             </div>
           ))}
         </div>
