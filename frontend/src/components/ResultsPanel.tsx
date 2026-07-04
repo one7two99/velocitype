@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WeakKeyInfo } from "../api/types";
 import type { EngineResult } from "../hooks/useTypingEngine";
@@ -29,6 +30,31 @@ export function ResultsPanel({
   onRetry,
 }: Props) {
   const navigate = useNavigate();
+
+  // Results hotkeys: Enter -> Next Lesson, Space -> Try Again. Armed after a
+  // short delay so the keystroke that just finished the lesson (e.g. a reflexive
+  // Space after the last word) can't immediately trigger an action.
+  useEffect(() => {
+    let armed = false;
+    const arm = setTimeout(() => {
+      armed = true;
+    }, 400);
+    const onKey = (e: KeyboardEvent) => {
+      if (!armed || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        onRetry();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(arm);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onNext, onRetry]);
 
   const stats = [
     { label: "WPM", value: Math.round(result.wpmNet).toString() },
@@ -74,9 +100,11 @@ export function ResultsPanel({
 
         <div className="tf-results-actions">
           <Button variant="primary" onClick={onNext}>
-            Next Lesson
+            Next Lesson <kbd className="tf-kbd">Enter</kbd>
           </Button>
-          <Button onClick={onRetry}>Try Again</Button>
+          <Button onClick={onRetry}>
+            Try Again <kbd className="tf-kbd">Space</kbd>
+          </Button>
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             Dashboard
           </Button>
