@@ -41,3 +41,24 @@ class UserResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     detail: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=MIN_PASSWORD_LENGTH, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def _new_password_strength(cls, v: str) -> str:
+        if v.strip() != v:
+            raise ValueError("password must not have leading/trailing whitespace")
+        return v
+
+
+class ChangeEmailRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
+    email: EmailStr = Field(max_length=255)
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)

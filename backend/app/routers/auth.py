@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.cookies import clear_auth_cookies, set_access_cookie, set_refresh_cookie
@@ -29,6 +29,9 @@ from app.errors import ProblemException
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.schemas.auth import (
+    ChangeEmailRequest,
+    ChangePasswordRequest,
+    DeleteAccountRequest,
     LoginRequest,
     MessageResponse,
     RegisterRequest,
@@ -185,3 +188,78 @@ async def logout(
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
+
+
+def _bad_password() -> ProblemException:
+    return ProblemException(
+        status_code=401,
+        title="Unauthorized",
+        detail="Current password is incorrect.",
+        type_="about:invalid-credentials",
+    )
+
+
+@router.patch("/password", response_model=MessageResponse)
+async def change_password(
+    payload: ChangePasswordRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> MessageResponse:
+    if not verify_password(payload.current_password, user.password_hash):
+        raise _bad_password()
+
+    user.password_hash = hash_password(payload.new_password)
+    # Invalidate every existing refresh token (log out other devices), then
+    # re-issue a fresh pair for the current session.
+    await db.execute(
+        update(RefreshToken)
+        .where(RefreshToken.user_id == user.id, RefreshToken.revoked.is_(False))
+        .values(revoked=True)
+    )
+    await db.commit()
+    await _issue_tokens(response, db, user)
+    return MessageResponse(detail="Password changed.")
+
+
+@router.patch("/email", response_model=UserResponse)
+async def change_email(
+    payload: ChangeEmailRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> User:
+    if not verify_password(payload.password, user.password_hash):
+        raise _bad_password()
+
+    new_email = str(payload.email)
+    if new_email != user.email:
+        existing = await db.execute(
+            select(User).where(User.email == new_email, User.id != user.id)
+        )
+        if existing.scalar_one_or_none() is not None:
+            raise ProblemException(
+                status_code=409,
+                title="Conflict",
+                detail="Email already registered.",
+                type_="about:duplicate-user",
+            )
+        user.email = new_email
+        await db.commit()
+        await db.refresh(user)
+    return user
+
+
+@router.delete("/me", status_code=204, response_class=Response)
+async def delete_account(
+    payload: DeleteAccountRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Response:
+    if not verify_password(payload.password, user.password_hash):
+        raise _bad_password()
+    # Cascades to sessions, keystrokes, key_stats, refresh_tokens, api_keys.
+    await db.delete(user)
+    await db.commit()
+    clear_auth_cookies(response)
+    return Response(status_code=204)
