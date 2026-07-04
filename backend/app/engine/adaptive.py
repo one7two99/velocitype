@@ -95,6 +95,23 @@ def key_wpm(m: KeyMetric) -> float | None:
     return 12000.0 / m.avg_latency_ms
 
 
+def latency_consistency(
+    avg_latency_ms: float | None,
+    latency_n: int,
+    latency_sq_sum: float,
+    min_samples: int = 5,
+) -> float | None:
+    """Per-key timing consistency in [0, 1] = 1 - coefficient of variation of the
+    key's latencies. Higher = steadier. None until there are enough samples."""
+    if not avg_latency_ms or avg_latency_ms <= 0 or latency_n < min_samples:
+        return None
+    variance = latency_sq_sum / latency_n - avg_latency_ms**2
+    if variance <= 0:
+        return 1.0
+    cv = (variance**0.5) / avg_latency_ms
+    return max(0.0, min(1.0, 1.0 - cv))
+
+
 def normalized_latency_to_target(m: KeyMetric, target_wpm: float) -> float:
     """How far a key's speed falls short of the target (keybr-style). A key at or
     above the target scores 0; a much slower key approaches 1."""

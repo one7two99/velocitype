@@ -7,8 +7,10 @@ import "./heatmap.css";
 const HEAT_CEIL = 0.3;
 // minimum attempts before a key's speed is considered meaningful
 const SPEED_MIN_ATTEMPTS = 5;
+// inconsistency (1 - consistency) at which a key reaches full heat
+const CONS_CEIL = 0.4;
 
-export type HeatMetric = "error" | "speed";
+export type HeatMetric = "error" | "speed" | "consistency";
 
 const DISPLAY: Record<string, string> = {
   " ": "␣",
@@ -37,6 +39,16 @@ function overlayFor(
     return { fill: "var(--heat-max)", opacity: 0.12 + intensity * 0.88 };
   }
 
+  if (metric === "consistency") {
+    // Higher consistency = green; erratic = red (mirrors the accuracy metric).
+    if (cell.consistency == null) return null;
+    const badness = 1 - cell.consistency;
+    const intensity = Math.min(1, badness / CONS_CEIL);
+    if (intensity <= 0) return { fill: "var(--correct)", opacity: 0.35 };
+    if (cell.consistency >= 0.9) return { fill: "var(--correct)", opacity: 0.35 };
+    return { fill: "var(--heat-max)", opacity: 0.12 + intensity * 0.88 };
+  }
+
   // speed: green at/above target, red below (keybr-style)
   const kw = keyWpm(cell);
   if (kw === null || cell.attempts < SPEED_MIN_ATTEMPTS) return null;
@@ -53,6 +65,11 @@ function tooltipFor(cell: KeyHeatCell, metric: HeatMetric, target: number): stri
     return kw === null
       ? `no speed data · target ${target}`
       : `${Math.round(kw)} wpm · target ${target}`;
+  }
+  if (metric === "consistency") {
+    return cell.consistency == null
+      ? "not enough data"
+      : `${Math.round(cell.consistency * 100)}% consistency`;
   }
   const ms = cell.avg_latency_ms != null ? ` · ${Math.round(cell.avg_latency_ms)}ms` : "";
   return `${(cell.error_rate * 100).toFixed(1)}% errors${ms}`;

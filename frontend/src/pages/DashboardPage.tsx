@@ -162,6 +162,24 @@ export function DashboardPage() {
       </Card>
 
       <Card>
+        <h3 className="tf-card-title">Key Heatmap — Consistency</h3>
+        <div className="tf-heatmap-center">
+          {layoutInfo && (
+            <FerrisHeatmap
+              layout={layoutInfo}
+              cells={heat.data?.keys ?? []}
+              metric="consistency"
+            />
+          )}
+        </div>
+        <p className="tf-heat-legend">
+          <span className="tf-heat-swatch tf-heat-swatch--good" /> steady timing
+          {"   "}
+          <span className="tf-heat-swatch tf-heat-swatch--bad" /> erratic
+        </p>
+      </Card>
+
+      <Card>
         <h3 className="tf-card-title">Recent Sessions</h3>
         {history.data && history.data.items.length > 0 ? (
           <table className="tf-sessions">
