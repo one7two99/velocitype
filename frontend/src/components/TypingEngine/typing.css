@@ -1,0 +1,40 @@
+.tf-typing {
+  font-size: 1.5rem;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  user-select: none;
+  max-width: 62ch;
+  margin: 0 auto;
+  word-break: break-word;
+}
+
+.tf-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.tf-char {
+  position: relative;
+  transition: color 0.05s;
+}
+
+.tf-char--pending { color: var(--text-muted); }
+.tf-char--correct { color: var(--correct); }
+.tf-char--error { color: var(--error); }
+.tf-char--missed { color: var(--error); opacity: 0.6; }
+.tf-char--extra { opacity: 0.8; text-decoration: underline; }
+
+/* Blinking beam caret to the LEFT of the current character. */
+.tf-char--caret::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: tf-caret-blink 1s step-end infinite;
+}
+.tf-char--eol::before { left: 0; }

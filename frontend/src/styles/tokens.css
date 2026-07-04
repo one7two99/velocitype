@@ -1,0 +1,64 @@
+/* Design tokens (Section 7). Dark-first; light theme via [data-theme="light"].
+   The theme store stamps data-theme on <html>; "system" leaves it unset and
+   the prefers-color-scheme media query below applies. */
+
+:root {
+  /* Dark (default) */
+  --bg-base: #0f1117;
+  --bg-surface: #1a1d27;
+  --bg-elevated: #22263a;
+  --accent: #e8c547;
+  --accent-dim: #c4a32e;
+  --text-primary: #e8eaf0;
+  --text-muted: #6b7280;
+  --correct: #4ade80;
+  --error: #f87171;
+
+  --border: #2a2f42;
+  --radius: 12px;
+  --radius-sm: 8px;
+
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-ui: "Inter", system-ui, -apple-system, sans-serif;
+
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  --heat-0: var(--bg-elevated);
+  --heat-max: #f87171;
+}
+
+/* Explicit light theme */
+:root[data-theme="light"] {
+  --bg-base: #f5f6fa;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eceef5;
+  --accent: #b8860b;
+  --accent-dim: #96690a;
+  --text-primary: #1a1d27;
+  --text-muted: #6b7280;
+  --correct: #16a34a;
+  --error: #dc2626;
+  --border: #d7dae6;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --heat-0: #e2e5ef;
+  --heat-max: #dc2626;
+}
+
+/* System preference (only when no explicit data-theme is set) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg-base: #f5f6fa;
+    --bg-surface: #ffffff;
+    --bg-elevated: #eceef5;
+    --accent: #b8860b;
+    --accent-dim: #96690a;
+    --text-primary: #1a1d27;
+    --text-muted: #6b7280;
+    --correct: #16a34a;
+    --error: #dc2626;
+    --border: #d7dae6;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --heat-0: #e2e5ef;
+    --heat-max: #dc2626;
+  }
+}

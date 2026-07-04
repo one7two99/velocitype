@@ -16,10 +16,12 @@ __pycache__/
 .venv/
 venv/
 
-# Frontend (later)
+# Frontend
 node_modules/
 frontend/dist/*
 !frontend/dist/.gitkeep
+*.tsbuildinfo
+.vite/
 
 # OS
 .DS_Store

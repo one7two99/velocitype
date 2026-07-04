@@ -1,0 +1,49 @@
+.tf-heatmap {
+  display: inline-block;
+}
+
+.tf-key-base {
+  fill: var(--heat-0);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.tf-key-heat {
+  fill: var(--heat-max);
+}
+
+.tf-key-label {
+  fill: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.tf-key-thumb {
+  fill: var(--bg-surface);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.tf-key-thumb-label {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.tf-heat-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+.tf-heat-tooltip strong { color: var(--accent); }

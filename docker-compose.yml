@@ -17,6 +17,17 @@ services:
     depends_on:
       api:
         condition: service_started
+      frontend:
+        condition: service_completed_successfully
+    networks: [typeforge_net]
+
+  # One-shot builder: compiles the SPA into the ./frontend/dist bind mount that
+  # Caddy serves, then exits. Rebuilds on every `up`; skip with
+  # `docker compose up --scale frontend=0` if dist is already built.
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend/dist:/app/dist
     networks: [typeforge_net]
 
   api:
