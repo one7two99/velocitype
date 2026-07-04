@@ -11,6 +11,7 @@ from app.db.redis import redis_client
 from app.db.session import engine
 from app.errors import register_exception_handlers
 from app.routers import auth, coach, keystrokes, lessons, mcp, sessions, stats
+from app.version import __version__
 
 _settings = get_settings()
 
@@ -29,7 +30,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(
         title="TypeForge API",
-        version="1.0.0",
+        version=__version__,
         description="Adaptive touch-typing trainer for split keyboards.",
         docs_url="/api/docs",
         openapi_url="/api/openapi.json",
@@ -53,7 +54,11 @@ def create_app() -> FastAPI:
 
     @health.get("/api/health")
     async def healthcheck() -> dict:
-        return {"status": "ok"}
+        return {"status": "ok", "version": __version__}
+
+    @health.get("/api/version")
+    async def version() -> dict:
+        return {"version": __version__}
 
     app.include_router(health)
     app.include_router(auth.router)

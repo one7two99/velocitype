@@ -119,6 +119,39 @@ weighting them ~3× within realistic bigrams/trigrams.
 
 ## Versioning
 
-Releases follow [Semantic Versioning](https://semver.org); see
-[CHANGELOG.md](./CHANGELOG.md). The full product spec is in
-`TypeForge_MVP_BriefingPack.md`.
+Releases follow [Semantic Versioning](https://semver.org) against a declared
+public surface; see [CHANGELOG.md](./CHANGELOG.md).
+
+**Public surface** (what the version speaks about):
+
+- the HTTP REST API under `/api/*` (routes and response fields)
+- the MCP contract (`/api/mcp/*` + API-key auth)
+- the deployment contract: `.env` variables, `docker-compose.yml` service names,
+  and the PostgreSQL schema
+
+**Bump rules**
+
+- **MAJOR** — a backward-incompatible change to the public surface: removing or
+  renaming a route, response field, env var, or compose service; a DB migration
+  that isn't backward-safe; or a change to the auth/cookie contract.
+- **MINOR** — backward-compatible additions: new routes, new optional fields or
+  request params, new features, or additive DB migrations (auto-applied on
+  startup).
+- **PATCH** — backward-compatible bug fixes with no public-surface change.
+
+**Pre-1.0 caveat.** While at `0.x`, per SemVer §4 the public surface is not yet
+guaranteed stable: minor releases may include additive DB migrations, and
+behaviour may still shift. We nonetheless apply the rules above consistently.
+**1.0.0** will be cut once the REST API and DB schema are considered stable
+enough to promise compatibility.
+
+**Single source of version.** `backend/app/version.py` (`__version__`) and
+`frontend/package.json` (`version`) must match — CI fails otherwise. The backend
+reports it at `GET /api/version` and in `GET /api/health`; the frontend shows it
+in the top-bar badge.
+
+**Release process.** Bump both version files, add a `CHANGELOG.md` entry and a
+`frontend/src/releaseNotes.ts` entry (the in-app release notes), then tag
+`vX.Y.Z`.
+
+The full product spec is in `TypeForge_MVP_BriefingPack.md`.

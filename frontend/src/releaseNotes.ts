@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.11.0",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "The app now reports its real version everywhere (the API previously showed 1.0.0 internally).",
+      ],
+      added: [
+        "A documented versioning policy and a check that keeps the frontend and backend versions in sync.",
+      ],
+    },
+  },
+  {
     version: "0.10.0",
     date: "2026-07-05",
     sections: {
