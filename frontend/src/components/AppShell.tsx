@@ -11,6 +11,7 @@ const links = [
   { to: "/analysis", label: "Analysis", end: false },
   { to: "/coach", label: "Coach", end: false },
   { to: "/settings", label: "Settings", end: false },
+  { to: "/profile", label: "Profile", end: false },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.13.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "New Profile page (nav item, hotkey 'p') for changing your password or email and deleting your account.",
+      ],
+      changed: [
+        "Account settings moved out of Settings into the dedicated Profile page; Settings keeps appearance, training, and API keys.",
+      ],
+    },
+  },
+  {
     version: "0.12.0",
     date: "2026-07-05",
     sections: {

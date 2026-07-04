@@ -7,6 +7,7 @@ import { AnalysisPage } from "./pages/AnalysisPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CoachPage } from "./pages/CoachPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TrainerPage } from "./pages/TrainerPage";
 import { applyTheme, useSettings } from "./stores/settingsStore";
@@ -53,6 +54,14 @@ export default function App() {
         element={
           <Protected>
             <SettingsPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <Protected>
+            <ProfilePage />
           </Protected>
         }
       />

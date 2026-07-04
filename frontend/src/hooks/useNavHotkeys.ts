@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 /**
  * Global single-key navigation: t -> Trainer, d -> Dashboard, a -> Analysis,
- * s -> Settings, c -> Coach.
+ * c -> Coach, s -> Settings, p -> Profile.
  *
  * Only mounted on non-typing pages (Dashboard, Settings, Coach) — never on the
  * Trainer, where those letters are lesson input. Ignores keystrokes typed into
@@ -40,6 +40,10 @@ export function useNavHotkeys() {
         case "s":
           e.preventDefault();
           navigate("/settings");
+          break;
+        case "p":
+          e.preventDefault();
+          navigate("/profile");
           break;
         case "c":
           e.preventDefault();

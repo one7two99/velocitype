@@ -9,6 +9,16 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-07-05
+
+### Added
+- New **Profile** page (`/profile`, nav item + hotkey `p`) for account actions:
+  change password, change email, delete account.
+
+### Changed
+- Account actions moved out of Settings into the dedicated Profile page; Settings
+  now covers appearance, training defaults, and MCP API keys.
+
 ## [0.12.0] - 2026-07-05
 
 ### Added
@@ -164,7 +174,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/adi-infra/typeforge/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/adi-infra/typeforge/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/adi-infra/typeforge/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/adi-infra/typeforge/compare/v0.9.0...v0.10.0
