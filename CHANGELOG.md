@@ -9,6 +9,17 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-04
+
+### Added
+- Target speed (WPM) setting (keybr-style), configurable via a slider in Settings.
+- The adaptive engine measures each key against the target: keys below the target
+  speed are prioritised for practice and graduate once they reach it
+  (`key_wpm = 12000 / avg_latency_ms`). `target_wpm` flows to `/api/sessions/start`,
+  `/api/sessions/{id}/complete`, and `/api/lessons/next`.
+- Results panel shows WPM against the target with a reached indicator; Dashboard
+  adds a target reference line on the trend and a "Keys @ target" count.
+
 ## [0.7.0] - 2026-07-04
 
 ### Added
@@ -115,7 +126,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/adi-infra/typeforge/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/adi-infra/typeforge/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/adi-infra/typeforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adi-infra/typeforge/compare/v0.4.0...v0.5.0
