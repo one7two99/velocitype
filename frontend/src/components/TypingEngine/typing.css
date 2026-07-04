@@ -25,11 +25,14 @@
 .tf-char--missed { color: var(--error); opacity: 0.6; }
 .tf-char--extra { opacity: 0.8; text-decoration: underline; }
 
-/* Blinking beam caret to the LEFT of the current character. */
-.tf-char--caret::before {
+/* Blinking beam caret. ::before sits to the LEFT of the current character;
+   ::after rides the RIGHT edge of the final character when a word is complete.
+   Both are absolutely positioned so the caret never occupies layout width — the
+   text after the cursor stays perfectly still. */
+.tf-char--caret::before,
+.tf-char--caret-end::after {
   content: "";
   position: absolute;
-  left: -2px;
   top: 0.15em;
   bottom: 0.15em;
   width: 2px;
@@ -37,4 +40,5 @@
   border-radius: 1px;
   animation: tf-caret-blink 1s step-end infinite;
 }
-.tf-char--eol::before { left: 0; }
+.tf-char--caret::before { left: -2px; }
+.tf-char--caret-end::after { right: -2px; }
