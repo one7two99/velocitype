@@ -9,6 +9,20 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-07-05
+
+### Added
+- Coach drill mode: while active, every Trainer session generates a fresh
+  LLM drill targeting the current weak keys (next drill prefetched during
+  typing), until switched back to adaptive. A banner offers "Switch to adaptive".
+- `GET /api/coach/metrics` and a Coach-page card showing the exact metrics the
+  coach uses (weak keys, avg WPM, accuracy, best WPM) — transparency.
+
+### Changed
+- Generated drills are verified to over-represent the focus keys
+  (`_covers_focus`); on failure the coach retries once, then falls back to the
+  deterministic generator (which guarantees weak-key coverage).
+
 ## [0.17.0] - 2026-07-05
 
 ### Added
@@ -202,7 +216,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/adi-infra/typeforge/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/adi-infra/typeforge/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/adi-infra/typeforge/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/adi-infra/typeforge/compare/v0.14.0...v0.15.0

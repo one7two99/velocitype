@@ -4,6 +4,7 @@ import type {
   ApiKeyInfo,
   CoachAnalysis,
   CoachDrill,
+  CoachMetrics,
   CoachStatus,
   KeyHeatmap,
   KeystrokeIn,
@@ -96,6 +97,8 @@ export const mcpApi = {
 
 export const coachApi = {
   status: () => api.get<CoachStatus>("/api/coach/status"),
+  metrics: (layoutId: string) =>
+    api.get<CoachMetrics>(`/api/coach/metrics?layout_id=${layoutId}`),
   analyze: (layoutId: string) =>
     api.post<CoachAnalysis>(`/api/coach/analyze?layout_id=${layoutId}`),
   drill: (layoutId: string) =>

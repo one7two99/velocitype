@@ -61,6 +61,15 @@ def _weak_info(metrics, scored) -> list[WeakKeyInfo]:
     ]
 
 
+def _covers_focus(lesson: str, focus_chars: list[str], min_per_key: int = 2) -> bool:
+    """Verify the drill actually over-represents the focus keys: each of the top
+    focus keys must appear at least ``min_per_key`` times. Empty focus ⇒ ok."""
+    top = focus_chars[:3]
+    if not top:
+        return True
+    return all(lesson.count(k) >= min_per_key for k in top)
+
+
 def _sanitize_lesson(raw: str, allowed_letters: set[str], min_words: int) -> str | None:
     """Coerce model output into a typeable lesson; return None if unusable."""
     text = raw.lower()
@@ -120,16 +129,22 @@ async def drill(
         "Output only the words."
     )
 
+    # Generate + verify: the drill must be typeable AND actually over-represent the
+    # focus keys. Retry once, else use the deterministic generator (which weights
+    # weak keys 3x and injects clusters for rare ones — coverage guaranteed).
     source = "ollama"
-    try:
-        raw = await ollama.generate(prompt, system=DRILL_SYSTEM, num_predict=160)
-        lesson = _sanitize_lesson(raw, allowed_letters, min_words=40)
-    except ollama.OllamaError:
-        lesson = None
+    lesson: str | None = None
+    for _ in range(2):
+        try:
+            raw = await ollama.generate(prompt, system=DRILL_SYSTEM, num_predict=160)
+        except ollama.OllamaError:
+            break
+        candidate = _sanitize_lesson(raw, allowed_letters, min_words=40)
+        if candidate and _covers_focus(candidate, weak_chars):
+            lesson = candidate
+            break
 
     if lesson is None:
-        # Deterministic fallback keeps the feature working if the model is down
-        # or produces unusable text.
         lesson = adaptive.generate_lesson(weak_chars, layout.characters)
         source = "fallback"
 

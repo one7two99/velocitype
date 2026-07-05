@@ -17,7 +17,9 @@ from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.errors import ProblemException
 from app.models.user import User
 from app.schemas.coach import CoachAnalysis, CoachDrill, CoachStatus
+from app.schemas.mcp import McpSummary
 from app.services import coach
+from app.services.mcp import build_summary
 from app.services.ollama import OllamaError
 
 _settings = get_settings()
@@ -47,6 +49,17 @@ def _unavailable(exc: OllamaError) -> ProblemException:
 @router.get("/status", response_model=CoachStatus)
 async def coach_status(_: User = Depends(get_current_user)) -> CoachStatus:
     return CoachStatus(**await coach.status())
+
+
+@router.get("/metrics", response_model=McpSummary)
+async def coach_metrics(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+) -> McpSummary:
+    """The exact stats the coach uses (transparency), for display in the UI."""
+    _require_layout(layout_id)
+    return await build_summary(db, user, layout_id)
 
 
 @router.post("/analyze", response_model=CoachAnalysis)

@@ -1,13 +1,14 @@
 import { create } from "zustand";
 
-// Hands an LLM-generated drill from the Coach page to the Trainer, which starts
-// a custom session with it and then clears it.
+// Coach-drill mode: while active, the Trainer generates a fresh LLM drill
+// (targeting the current weak keys) for every session, until switched back to
+// adaptive.
 interface CoachState {
-  pendingDrill: string | null;
-  setPendingDrill: (text: string | null) => void;
+  drillActive: boolean;
+  setDrillActive: (active: boolean) => void;
 }
 
 export const useCoachStore = create<CoachState>((set) => ({
-  pendingDrill: null,
-  setPendingDrill: (pendingDrill) => set({ pendingDrill }),
+  drillActive: false,
+  setDrillActive: (drillActive) => set({ drillActive }),
 }));
