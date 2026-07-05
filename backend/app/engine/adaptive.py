@@ -318,22 +318,28 @@ def generate_lesson(
     n_words = target_word_count(min_words, target_seconds)
     words_pool, pool_weights = _weighted_word_pool(typeable, weakset)
 
-    # Rare weak keys absent from the word pool get dedicated drill clusters so no
-    # targeted key is silently dropped.
+    # Every typeable letter must be practised, not only weak ones: with a small
+    # unlocked set (early progressive unlocking) the real-word pool often can't
+    # cover all active keys (e.g. {e,t,a,o,i,n} only yields "not"/"into" — missing
+    # e and a). Any uncovered letter gets dedicated drill clusters. Weak keys are
+    # listed first so they get the most emphasis.
     covered = {c for w in words_pool for c in set(w)} if words_pool else set()
-    orphan_weak = [k for k in weak if k not in covered]
+    to_practice = list(dict.fromkeys(
+        [k for k in weak if k not in covered]
+        + [c for c in typeable_list if c.isalpha() and c not in covered]
+    ))
 
     tokens: list[str] = []
     if words_pool:
         tokens.extend(rng.choices(words_pool, weights=pool_weights, k=n_words))
     elif typeable_list:
-        # Too few real words for this key set (e.g. early progressive unlocking):
-        # generate keybr-style pseudo-words from the unlocked letters only.
+        # No real words for this key set: keybr-style pseudo-words from the
+        # unlocked letters only.
         pool = weak or typeable_list
         tokens.extend(_pseudo_word(typeable_list, rng, rng.choice(pool)) for _ in range(n_words))
 
-    # Sprinkle drill clusters for orphan weak keys throughout the lesson.
-    for k in orphan_weak:
+    # Sprinkle drill clusters so every uncovered (unlocked) letter is practised.
+    for k in to_practice:
         for cluster in _drill_clusters(k, rng, typeable, count=max(3, n_words // 10)):
             insert_at = rng.randint(0, len(tokens)) if tokens else 0
             tokens.insert(insert_at, cluster)

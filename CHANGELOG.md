@@ -9,6 +9,15 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.31.1] - 2026-07-05
+
+### Fixed
+- Progressive unlocking: the first lessons only practised some of the unlocked
+  keys (e.g. the initial set showed only "into"/"not" — missing **e** and **a**),
+  because the common-word pool for a small key set can't cover every letter. The
+  lesson generator now guarantees **every unlocked letter is practised** (via
+  keybr-style clusters for letters no real word covers).
+
 ## [0.31.0] - 2026-07-05
 
 ### Added
@@ -448,7 +457,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.31.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.31.1...HEAD
+[0.31.1]: https://github.com/adi-infra/typeforge/compare/v0.31.0...v0.31.1
 [0.31.0]: https://github.com/adi-infra/typeforge/compare/v0.30.0...v0.31.0
 [0.30.0]: https://github.com/adi-infra/typeforge/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/adi-infra/typeforge/compare/v0.28.2...v0.29.0

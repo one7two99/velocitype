@@ -60,6 +60,15 @@ def test_lesson_only_uses_unlocked_letters_small_set():
     assert "e" in lesson
 
 
+def test_lesson_covers_every_unlocked_letter():
+    # Regression: the initial set {e,t,a,o,i,n} yields only "not"/"into" as real
+    # words (missing e, a) — the lesson must still practise ALL unlocked letters.
+    allowed = list("etaoin")
+    for seed in range(5):
+        lesson = adaptive.generate_lesson([], allowed, rng=random.Random(seed))
+        assert set(allowed) <= _all_chars(lesson)
+
+
 def test_lesson_pseudo_words_when_no_real_words():
     # No common English words fit {q,z,x} → pseudo-word path must still be clean.
     allowed = list("qzx")
