@@ -9,6 +9,19 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.31.2] - 2026-07-05
+
+### Fixed
+- AI coach drills now use your **latest** metrics: the next drill is prefetched
+  **after** a session's results are saved (previously it was fetched at the start
+  of the current session, so it lagged one session behind).
+
+### Changed
+- Coach drills (and adaptive lessons) are **more varied on small key sets**: when
+  few real words fit the unlocked letters, the generator blends in varied
+  pseudo-word clusters instead of repeating a couple of words (e.g. "not"/"into").
+  Full-keyboard lessons stay word-based.
+
 ## [0.31.1] - 2026-07-05
 
 ### Fixed
@@ -457,7 +470,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.31.1...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.31.2...HEAD
+[0.31.2]: https://github.com/adi-infra/typeforge/compare/v0.31.1...v0.31.2
 [0.31.1]: https://github.com/adi-infra/typeforge/compare/v0.31.0...v0.31.1
 [0.31.0]: https://github.com/adi-infra/typeforge/compare/v0.30.0...v0.31.0
 [0.30.0]: https://github.com/adi-infra/typeforge/compare/v0.29.0...v0.30.0

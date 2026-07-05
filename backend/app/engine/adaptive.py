@@ -30,6 +30,10 @@ MIN_LESSON_WORDS = 40
 TARGET_LESSON_SECONDS = 60
 ASSUMED_LEARNER_WPM = 40  # conservative; used to convert seconds -> word count
 WEAK_KEY_FREQUENCY_MULTIPLIER = 3
+# Below this many distinct real words available for the key set, the lesson blends
+# in varied pseudo-word clusters so small (early progressive) sets aren't just
+# "not into not into". A rich pool (full keyboard) stays ~all real words.
+RICH_VOCAB = 20
 
 # Target speed (keybr-style). Default equals the assumed learner speed.
 DEFAULT_TARGET_WPM = 40
@@ -329,14 +333,17 @@ def generate_lesson(
         + [c for c in typeable_list if c.isalpha() and c not in covered]
     ))
 
+    # Blend real words with varied clusters by how rich the word pool is: a thin
+    # pool (small unlocked set) leans on clusters for variety; a rich pool stays
+    # ~all real words. Weak keys stay over-represented (pool weights + cluster bias).
+    p_real = min(1.0, len(words_pool) / RICH_VOCAB)
+    pseudo_letters = weak or typeable_list
     tokens: list[str] = []
-    if words_pool:
-        tokens.extend(rng.choices(words_pool, weights=pool_weights, k=n_words))
-    elif typeable_list:
-        # No real words for this key set: keybr-style pseudo-words from the
-        # unlocked letters only.
-        pool = weak or typeable_list
-        tokens.extend(_pseudo_word(typeable_list, rng, rng.choice(pool)) for _ in range(n_words))
+    for _ in range(n_words):
+        if words_pool and rng.random() < p_real:
+            tokens.append(rng.choices(words_pool, weights=pool_weights, k=1)[0])
+        elif typeable_list:
+            tokens.append(_drill_clusters(rng.choice(pseudo_letters), rng, typeable, count=1)[0])
 
     # Sprinkle drill clusters so every uncovered (unlocked) letter is practised.
     for k in to_practice:

@@ -72,10 +72,8 @@ export function TrainerPage() {
             mode: "coach_drill",
             custom_text: drill,
           });
-          // Kick off generation of the next drill for a smooth "Next Lesson".
-          nextDrillRef.current = coachApi
-            .drill(layoutId, focusKeys, focusBigrams)
-            .then((r) => r.lesson);
+          // Note: the next drill is prefetched in handleComplete (after this
+          // session's metrics are saved) so it reflects the latest performance.
         } else {
           resp = await sessionsApi.start({
             layout_id: layoutId,
@@ -133,6 +131,13 @@ export function TrainerPage() {
         qc.invalidateQueries({ queryKey: ["stats"] });
         qc.invalidateQueries({ queryKey: ["sessions"] });
         if (resp.unlocked_char) qc.invalidateQueries({ queryKey: ["lessons", "unlock"] });
+        // Now that THIS session's metrics are persisted, prefetch the next coach
+        // drill so it reflects the just-finished performance (not a stale snapshot).
+        if (drillActive) {
+          nextDrillRef.current = coachApi
+            .drill(layoutId, focusKeys, focusBigrams)
+            .then((d) => d.lesson);
+        }
       } catch (err) {
         setSaveError(
           err instanceof ApiError ? err.message : "Failed to save session.",
@@ -141,7 +146,7 @@ export function TrainerPage() {
         setSaving(false);
       }
     },
-    [sessionId, startWeak, targetWpm, qc],
+    [sessionId, startWeak, targetWpm, qc, drillActive, layoutId, focusKeys, focusBigrams],
   );
 
   if (phase === "loading") {
