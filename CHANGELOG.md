@@ -9,6 +9,25 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-07-05
+
+### Added
+- **N-gram metric model (backend).** Bigram statistics are now captured from your
+  keystrokes — same-finger bigrams (SFB), inward/outward rolls, alternation — plus
+  **rhythm consistency** (inter-key-interval spread) and a **hitch** (hesitation)
+  counter, stored in a new `ngram_stats` table (migration `0005`). Trigram
+  rolls/redirects are derived on read. A pure engine module `engine/ngrams.py`
+  does the classification and weakness scoring (SFBs get a score bonus).
+- The **AI coach now sees bigrams and rhythm**: `analyze` calls out weak
+  same-finger bigrams, rhythm hitches and awkward redirects (grounded in the data,
+  no invented numbers), and `POST /api/coach/drill` accepts `focus_bigrams` to
+  build drills around specific letter pairs (with coverage verification + the
+  deterministic fallback).
+- New API: `GET /api/stats/ngrams` (per-bigram table with class + consistency);
+  `GET /api/coach/metrics` now includes `weak_bigrams` + `trigram_rollup`.
+- One-off backfill `python -m app.db.backfill_ngrams` seeds existing users' bigram
+  stats from their retained keystrokes.
+
 ## [0.26.1] - 2026-07-05
 
 ### Fixed
@@ -355,7 +374,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.26.1...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.27.0...HEAD
+[0.27.0]: https://github.com/adi-infra/typeforge/compare/v0.26.1...v0.27.0
 [0.26.1]: https://github.com/adi-infra/typeforge/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/adi-infra/typeforge/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/adi-infra/typeforge/compare/v0.24.0...v0.25.0

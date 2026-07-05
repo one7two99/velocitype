@@ -5,9 +5,17 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.mcp import McpSummary
 from app.schemas.session import WeakKeyInfo
 
 _MAX_PROMPT = 8000
+
+
+class CoachMetricsResponse(McpSummary):
+    """The stats the coach sees (transparency) plus the n-gram view (design §6).
+    Fields mirror the compact block sent to the LLM in analyze()."""
+    weak_bigrams: list[dict] = []
+    trigram_rollup: dict | None = None
 
 
 class CoachAnalysis(BaseModel):
@@ -64,6 +72,9 @@ class DrillRequest(BaseModel):
     # Optional explicit focus keys (from the per-key Analysis). Empty/None →
     # the adaptive engine picks the weakest keys automatically.
     focus_keys: list[str] | None = Field(default=None, max_length=12)
+    # Optional focus bigrams (letter pairs from the n-gram analysis). Take
+    # precedence over focus_keys when present.
+    focus_bigrams: list[str] | None = Field(default=None, max_length=12)
 
 
 class PullRequest(BaseModel):

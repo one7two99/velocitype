@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.27.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "The AI coach now understands your bigrams and rhythm: analysis calls out same-finger bigrams, rhythm hitches and awkward redirects, and drills can target specific letter pairs. (A dedicated bigram/rhythm view in Analysis is coming next.)",
+      ],
+    },
+  },
+  {
     version: "0.26.1",
     date: "2026-07-05",
     sections: {
