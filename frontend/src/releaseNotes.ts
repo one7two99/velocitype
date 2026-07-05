@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.28.1",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "AI-Coach moved next to Trainer in the menu. The Analysis page now has a sub-navigation for its two tables (Per-key breakdown, Bigram breakdown).",
+      ],
+    },
+  },
+  {
     version: "0.28.0",
     date: "2026-07-05",
     sections: {

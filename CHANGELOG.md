@@ -9,6 +9,14 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.28.1] - 2026-07-05
+
+### Changed
+- Nav: **AI-Coach** now sits directly right of Trainer.
+- Analysis: a sub-navigation at the top links to its two tables (**Per-key
+  breakdown** and **Bigram breakdown**) — click to jump, and the active section is
+  highlighted as you scroll.
+
 ## [0.28.0] - 2026-07-05
 
 ### Added
@@ -389,7 +397,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.1...HEAD
+[0.28.1]: https://github.com/adi-infra/typeforge/compare/v0.28.0...v0.28.1
 [0.28.0]: https://github.com/adi-infra/typeforge/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/adi-infra/typeforge/compare/v0.26.1...v0.27.0
 [0.26.1]: https://github.com/adi-infra/typeforge/compare/v0.26.0...v0.26.1
