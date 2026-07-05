@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timedelta, timezone
+from statistics import fmean
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import Numeric, cast, func, select
@@ -14,6 +15,7 @@ from app.engine import adaptive
 from app.engine import ngrams as ngram_engine
 from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.models.key_stat import KeyStat
+from app.models.keystroke import Keystroke
 from app.models.session import TypingSession
 from app.models.user import User
 from app.schemas.stats import (
@@ -22,6 +24,8 @@ from app.schemas.stats import (
     NgramRow,
     NgramTable,
     ProgressSeries,
+    SessionStatPoint,
+    SessionStatSeries,
     StatsOverview,
     TopError,
     TrendPoint,
@@ -33,6 +37,36 @@ router = APIRouter(prefix="/api/stats", tags=["stats"])
 
 def _f(value) -> float | None:
     return float(value) if value is not None else None
+
+
+# Rolling window (in inter-key intervals) used to derive intra-session speed.
+# A short window smooths single-keystroke jitter while still exposing genuine
+# bursts as the session's peak. Instantaneous speed over W intervals spanning
+# dt ms is (W chars / 5) / (dt / 60000) == W * 12000 / dt, matching the app's
+# per-key WPM convention (12000 / latency_ms).
+_WPM_WINDOW = 5
+_MAX_WPM_CAP = 300.0
+
+
+def _session_speed(offsets: list[int]) -> tuple[float | None, float | None]:
+    """Return (avg_wpm, max_wpm) computed from a session's keystroke offsets."""
+    ts = sorted(offsets)
+    n = len(ts)
+    if n < 2:
+        return None, None
+    window = min(_WPM_WINDOW, n - 1)
+    wpms: list[float] = []
+    for i in range(window, n):
+        dt = ts[i] - ts[i - window]
+        if dt > 0:
+            wpms.append(min(window * 12000.0 / dt, _MAX_WPM_CAP))
+    if not wpms:  # every keystroke shared a timestamp; fall back to the full span
+        span = ts[-1] - ts[0]
+        if span <= 0:
+            return None, None
+        w = min((n - 1) * 12000.0 / span, _MAX_WPM_CAP)
+        return w, w
+    return fmean(wpms), max(wpms)
 
 
 async def _daily_trend(
@@ -222,3 +256,58 @@ async def progress(
     since = datetime.now(timezone.utc) - timedelta(days=days)
     points = await _daily_trend(db, user.id, layout_id, since)
     return ProgressSeries(layout_id=layout_id, days=days, points=points)
+
+
+@router.get("/sessions", response_model=SessionStatSeries)
+async def session_series(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+) -> SessionStatSeries:
+    """Per-session series over ALL completed sessions (that have keystrokes):
+    distinct keys, intra-session average and peak WPM, and accuracy."""
+    rows = await db.execute(
+        select(
+            TypingSession.id,
+            TypingSession.started_at,
+            TypingSession.accuracy,
+            Keystroke.ts_offset_ms,
+            Keystroke.expected_char,
+        )
+        .join(Keystroke, Keystroke.session_id == TypingSession.id)
+        .where(
+            TypingSession.user_id == user.id,
+            TypingSession.layout_id == layout_id,
+            TypingSession.completed_at.is_not(None),
+        )
+        .order_by(TypingSession.started_at, Keystroke.ts_offset_ms)
+    )
+
+    grouped: dict[uuid.UUID, dict] = {}
+    order: list[uuid.UUID] = []
+    for sid, started, acc, ts, ch in rows.all():
+        g = grouped.get(sid)
+        if g is None:
+            g = {"started_at": started, "accuracy": acc, "offsets": [], "keys": set()}
+            grouped[sid] = g
+            order.append(sid)
+        g["offsets"].append(ts)
+        if ch and ch.strip():          # count real keys, not spaces/newlines
+            g["keys"].add(ch)
+
+    points: list[SessionStatPoint] = []
+    for i, sid in enumerate(order, start=1):
+        g = grouped[sid]
+        avg_wpm, max_wpm = _session_speed(g["offsets"])
+        acc = g["accuracy"]
+        points.append(
+            SessionStatPoint(
+                index=i,
+                started_at=g["started_at"],
+                distinct_keys=len(g["keys"]),
+                avg_wpm=round(avg_wpm, 1) if avg_wpm is not None else None,
+                max_wpm=round(max_wpm, 1) if max_wpm is not None else None,
+                accuracy=round(_f(acc), 4) if acc is not None else None,
+            )
+        )
+    return SessionStatSeries(layout_id=layout_id, points=points)

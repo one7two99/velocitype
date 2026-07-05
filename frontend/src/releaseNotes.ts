@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.32.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Dashboard: a new “All Completed Sessions” chart above the 30-day trend — for every completed session it shows the number of distinct keys, average and peak WPM (measured within the session), and accuracy.",
+      ],
+    },
+  },
+  {
     version: "0.31.3",
     date: "2026-07-05",
     sections: {
