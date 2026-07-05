@@ -51,6 +51,36 @@ ever sent to an external API unless you explicitly opt in.
   removes every row — sessions, keystrokes, per-key and bigram stats, provider
   config (including any stored Mistral key) and prompt overrides.
 
+## How metrics are computed
+
+Everything is derived from your raw keystrokes (each with a millisecond offset,
+expected/actual character, and correctness) — no black boxes.
+
+- **WPM (per session).** Words are counted the standard way, 5 characters = 1
+  word. *Raw* WPM = `correct_chars / 5 / minutes`; *net* WPM subtracts a penalty
+  for uncorrected error words: `raw − error_words / minutes`.
+- **Accuracy** = `correct_keystrokes / total_keystrokes`.
+- **Consistency (per session)** = `1 − CV` of your per-second gross-WPM samples,
+  clamped to `[0, 1]` (CV = standard deviation ÷ mean). Steadier typing → closer
+  to 1.
+- **Per-key & per-bigram speed** = `12000 / average_latency_ms` — i.e. how many
+  5-character words per minute that key/transition would sustain at its average
+  inter-key interval. **Per-key/bigram consistency** is `1 − CV` of that key's or
+  bigram's inter-key intervals (needs ≥ 5 samples).
+- **Bigram classes, rolls, hitches.** Bigrams are classified from the layout's
+  finger/hand maps (same-finger bigram, inward/outward roll, alternation); a
+  **hitch** is a hesitation — an inter-key interval well above the bigram's own
+  typical rhythm. Trigram rolls/redirects are derived on read.
+- **"All Completed Sessions" chart (Dashboard).** For each completed session that
+  has stored keystrokes:
+  - **Distinct keys** = number of different non-space characters typed.
+  - **Average / Max WPM** are measured *within* the session using a rolling
+    window of 5 inter-key intervals: each window's speed is
+    `5 × 12000 / Δt_ms`, the **average** is the mean over all windows and the
+    **max** is the fastest window (peak burst), capped at 300 WPM to keep the
+    axis readable.
+  - **Accuracy** is the session's stored accuracy.
+
 ## Quick start
 
 Requires Docker (Compose v2) and OpenSSL.

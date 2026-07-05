@@ -59,6 +59,8 @@
   }
   h1,h2,h3{font-family:var(--mono);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0}
   p{margin:0 0 1rem}
+  .feat code{font-family:var(--mono);font-size:.82em;color:var(--teal);
+    background:rgba(79,209,197,.08);padding:.05em .35em;border-radius:4px}
   .lede{color:var(--muted);max-width:60ch}
 
   /* ---------- top bar ---------- */
@@ -374,6 +376,23 @@
       <div class="feat reveal"><h3>Targeted drills</h3><p>Tick weak keys or bigrams in the Analysis tables and generate a coach drill aimed at exactly those — coverage-verified, with a deterministic fallback.</p></div>
       <div class="feat reveal"><h3>Editable coach prompts</h3><p>Don't like the coaching voice? The analysis and drill prompts are yours to rewrite, per user, right in the settings.</p></div>
       <div class="feat reveal"><h3>Your data, on your terms</h3><p>Sessions and stats live in your own Postgres and sync across your browsers. One password-confirmed click really deletes all of it — rows gone, not flagged.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="measure">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">How it's measured</p>
+      <h2>Every number comes from your keystrokes.</h2>
+    </div>
+    <div class="feats">
+      <div class="feat reveal"><h3>WPM</h3><p>Standard 5 characters = 1 word. <code>raw = correct chars ÷ 5 ÷ minutes</code>; <code>net</code> subtracts a penalty for uncorrected error words. No fudge factors.</p></div>
+      <div class="feat reveal"><h3>Accuracy</h3><p><code>correct keystrokes ÷ total keystrokes</code> — exactly what you'd expect, counted per keystroke.</p></div>
+      <div class="feat reveal"><h3>Consistency</h3><p><code>1 − CV</code> of your per-second speed (CV = std-dev ÷ mean), clamped to 0–1. Steadier rhythm scores closer to 1.</p></div>
+      <div class="feat reveal"><h3>Per-key &amp; bigram speed</h3><p><code>12000 ÷ average latency (ms)</code> — the words-per-minute each key or letter pair sustains at its typical inter-key interval. Consistency is <code>1 − CV</code> of those intervals.</p></div>
+      <div class="feat reveal"><h3>Rolls, SFBs &amp; hitches</h3><p>Letter pairs are classed from the layout's finger/hand map (same-finger bigram, inward/outward roll, alternation); a <em>hitch</em> is an interval well above that pair's own rhythm.</p></div>
+      <div class="feat reveal"><h3>Per-session chart</h3><p>Each completed session shows its distinct keys, accuracy, and average &amp; peak WPM measured <em>within</em> the session — a rolling 5-interval window, <code>5 × 12000 ÷ Δt</code>, averaged and peaked.</p></div>
     </div>
   </div>
 </section>
