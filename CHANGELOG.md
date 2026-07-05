@@ -9,6 +9,15 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.28.2] - 2026-07-05
+
+### Fixed
+- Generating a drill from the Analysis tables failed with "One or more fields
+  failed validation." whenever more than 12 keys/bigrams were selected (e.g.
+  "Generate drill from 245 bigrams"). The `focus_keys`/`focus_bigrams` request
+  lists were capped at 12 items; the bound is now generous (the service already
+  focuses the drill on the top few of whatever is selected).
+
 ## [0.28.1] - 2026-07-05
 
 ### Changed
@@ -397,7 +406,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.1...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.2...HEAD
+[0.28.2]: https://github.com/adi-infra/typeforge/compare/v0.28.1...v0.28.2
 [0.28.1]: https://github.com/adi-infra/typeforge/compare/v0.28.0...v0.28.1
 [0.28.0]: https://github.com/adi-infra/typeforge/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/adi-infra/typeforge/compare/v0.26.1...v0.27.0

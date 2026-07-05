@@ -64,6 +64,24 @@ async def test_drill_targets_bigrams_via_llm(client, unique_user, monkeypatch):
     assert [w["char"] for w in body["weak_keys"]] == ["sc"]
 
 
+async def test_drill_accepts_large_focus_selection(client, unique_user, monkeypatch):
+    """Selecting many keys/bigrams (as 'select all' does) must not 422 — the
+    service truncates internally. Regression for the max_length list cap."""
+    await _register(client, unique_user)
+
+    async def ok(prompt, system=None, *, model=None, num_predict=300):
+        return "the and for with that have from they this " * 6
+
+    monkeypatch.setattr(ollama, "generate", ok)
+    # 30 keys and 300 bigrams — well past the old 12-item cap.
+    many_keys = list("abcdefghijklmnopqrstuvwxyz") + [",", ".", "/", ";"]
+    many_bigrams = [a + b for a in "abcdefghijklmnop" for b in "abcdefghijklmnopqrst"][:300]
+    assert (await client.post("/api/coach/drill", json={"focus_keys": many_keys})).status_code == 200
+    assert (
+        await client.post("/api/coach/drill", json={"focus_bigrams": many_bigrams})
+    ).status_code == 200
+
+
 async def test_drill_bigram_falls_back_to_letters(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 

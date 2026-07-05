@@ -70,11 +70,14 @@ class ModelList(BaseModel):
 
 class DrillRequest(BaseModel):
     # Optional explicit focus keys (from the per-key Analysis). Empty/None →
-    # the adaptive engine picks the weakest keys automatically.
-    focus_keys: list[str] | None = Field(default=None, max_length=12)
+    # the adaptive engine picks the weakest keys automatically. The list is only
+    # a payload sanity bound (a whole layout is ~42 keys); the service picks the
+    # top few from whatever is sent.
+    focus_keys: list[str] | None = Field(default=None, max_length=128)
     # Optional focus bigrams (letter pairs from the n-gram analysis). Take
-    # precedence over focus_keys when present.
-    focus_bigrams: list[str] | None = Field(default=None, max_length=12)
+    # precedence over focus_keys when present. Bound generously — a layout can
+    # have hundreds of observed bigrams and the user may "select all".
+    focus_bigrams: list[str] | None = Field(default=None, max_length=2048)
 
 
 class PullRequest(BaseModel):
