@@ -9,6 +9,22 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-07-05
+
+### Added
+- **Editable AI prompts.** Settings now has an "AI Settings" section where you can
+  view and override the exact prompts sent to the local AI coach — a separate
+  system prompt and instruction for both *Get analysis* and *Start coaching
+  drills* (four fields). Fresh installs start from built-in defaults; edits are
+  stored server-side per user. The instruction templates support `{{data}}`
+  (trainee stats) and `{{focus}}` (weak keys) placeholders, which the app injects
+  automatically. "Reset to defaults" clears your overrides.
+- New endpoints `GET`/`PUT /api/coach/prompts` and a `user_prompts` table
+  (migration `0003`).
+
+### Changed
+- The navigation entry "Coach" is renamed to **AI-Coach**.
+
 ## [0.20.3] - 2026-07-05
 
 ### Fixed
@@ -256,7 +272,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.3...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/adi-infra/typeforge/compare/v0.20.3...v0.21.0
 [0.20.3]: https://github.com/adi-infra/typeforge/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/adi-infra/typeforge/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/adi-infra/typeforge/compare/v0.20.0...v0.20.1
