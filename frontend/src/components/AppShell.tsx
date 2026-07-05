@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="tf-topbar">
         <div className="tf-brand-group">
           <div className="tf-brand mono">
-            Type<span>Forge</span>
+            Veloci<span>type</span>
           </div>
           <button
             className="tf-version mono"

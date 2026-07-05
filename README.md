@@ -1,8 +1,16 @@
-# TypeForge
+# Velocitype
+
+> The world's fastest typing trainer doesn't run in the cloud, it runs on your
+> localhost. Every session gets torn apart by a local AI model, every mistake
+> turned into a targeted drill. Made by split keyboard nerds who obsess over every
+> layer and homerow mod, for the people who get it. Not a single byte leaves your
+> machine. Your keyboard, your data, your speed.
 
 Self-hosted, adaptive touch-typing trainer for split-keyboard enthusiasts —
 combining keybr-style adaptive key learning with monkeytype-style session UX,
-built for the Ferris Sweep (Colemak-DH) from day one.
+built for the Ferris Sweep and Corne (Colemak-DH) from day one. Every session is
+analysed by a **local** LLM (Ollama) that turns your weak keys into targeted
+drills — nothing is ever sent to an external API.
 
 - **Backend:** FastAPI (Python 3.12), async SQLAlchemy + asyncpg, PostgreSQL 16, Redis 7
 - **Frontend:** React 18 + TypeScript + Vite, Zustand, TanStack Query, recharts
@@ -44,7 +52,7 @@ Internet ─▶ Caddy (8080/8443)
 
 Only Caddy is exposed to the host in production; Postgres/Redis stay on the
 internal Docker network. The app connects to Postgres as a least-privilege
-`typeforge_app` role (provisioned by `db/init/01-app-role.sh`).
+`velocitype_app` role (provisioned by `db/init/01-app-role.sh`).
 
 ## Development
 
@@ -54,7 +62,7 @@ them on `localhost:5432` / `localhost:6379`):
 ```bash
 cd backend
 pip install -r requirements.txt
-TEST_DATABASE_URL=postgresql+asyncpg://typeforge_app:dev_app_change_me@localhost:5432/typeforge \
+TEST_DATABASE_URL=postgresql+asyncpg://velocitype_app:dev_app_change_me@localhost:5432/velocitype \
 REDIS_URL=redis://:dev_redis_change_me@localhost:6379/15 \
 pytest
 ```
@@ -154,4 +162,4 @@ in the top-bar badge.
 `frontend/src/releaseNotes.ts` entry (the in-app release notes), then tag
 `vX.Y.Z`.
 
-The full product spec is in `TypeForge_MVP_BriefingPack.md`.
+The full product spec is in `Velocitype_MVP_BriefingPack.md`.

@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.23.0",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "TypeForge is now Velocitype — the world's fastest typing trainer that runs on your localhost, not the cloud. Not a single byte leaves your machine. Same app, new name.",
+      ],
+    },
+  },
+  {
     version: "0.22.0",
     date: "2026-07-05",
     sections: {
@@ -76,7 +85,7 @@ export const RELEASES: Release[] = [
     date: "2026-07-05",
     sections: {
       changed: [
-        "The version badge now sits next to the TypeForge logo (top-left) for better visibility.",
+        "The version badge now sits next to the Velocitype logo (top-left) for better visibility.",
       ],
     },
   },

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Runs once, on first cluster init, as the postgres superuser.
 # Creates the least-privilege application role and its database, so the API
-# never connects as a superuser (Section 2: least-privilege typeforge_app role).
+# never connects as a superuser (Section 2: least-privilege velocitype_app role).
 set -e
 
 : "${APP_DB:?APP_DB must be set}"

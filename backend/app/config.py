@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     jwt_private_key_path: str = Field(default="/run/secrets/jwt_private")
     jwt_public_key_path: str = Field(default="/run/secrets/jwt_public")
     jwt_algorithm: str = Field(default="RS256")
-    jwt_issuer: str = Field(default="typeforge")
+    jwt_issuer: str = Field(default="velocitype")
     access_token_expire_minutes: int = Field(default=15)
     refresh_token_expire_days: int = Field(default=30)
 

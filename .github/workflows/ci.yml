@@ -13,13 +13,13 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: typeforge_app
+          POSTGRES_USER: velocitype_app
           POSTGRES_PASSWORD: ci_password
-          POSTGRES_DB: typeforge
+          POSTGRES_DB: velocitype
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U typeforge_app -d typeforge"
+          --health-cmd "pg_isready -U velocitype_app -d velocitype"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -40,7 +40,7 @@ jobs:
     env:
       # conftest.py generates its own JWT keys and derives DATABASE_URL from
       # TEST_DATABASE_URL; it creates tables via Base.metadata.create_all.
-      TEST_DATABASE_URL: postgresql+asyncpg://typeforge_app:ci_password@localhost:5432/typeforge
+      TEST_DATABASE_URL: postgresql+asyncpg://velocitype_app:ci_password@localhost:5432/velocitype
       REDIS_URL: redis://localhost:6379/15
 
     steps:

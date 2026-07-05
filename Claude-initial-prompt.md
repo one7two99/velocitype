@@ -1,8 +1,8 @@
-I am building TypeForge, a self-hosted touch typing trainer. I have a complete MVP Briefing Pack that defines the full architecture, data models, API, adaptive learning engine, security requirements, and file structure. Your job is to implement the backend first.
+I am building Velocitype, a self-hosted touch typing trainer. I have a complete MVP Briefing Pack that defines the full architecture, data models, API, adaptive learning engine, security requirements, and file structure. Your job is to implement the backend first.
 
 Please read the briefing pack carefully before writing any code:
 
-[PASTE FULL CONTENTS OF TypeForge_MVP_BriefingPack.md HERE]
+[PASTE FULL CONTENTS OF Velocitype_MVP_BriefingPack.md HERE]
 
 ---
 

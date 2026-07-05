@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to TypeForge are documented here.
+All notable changes to Velocitype are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,6 +8,19 @@ While the project is pre-1.0, minor versions may introduce features and patch
 versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
+
+## [0.23.0] - 2026-07-05
+
+### Changed
+- **Rebrand: TypeForge is now Velocitype.** All user-facing surfaces (app title,
+  logo, auth screen, release notes) and documentation now use the Velocitype name
+  and manifesto: *the world's fastest typing trainer doesn't run in the cloud, it
+  runs on your localhost.* Not a single byte leaves your machine.
+- Infrastructure identifiers were renamed to match: the Postgres database
+  (`typeforge` → `velocitype`) and app role (`typeforge_app` → `velocitype_app`)
+  were renamed in place (existing training data preserved), and the Docker Compose
+  project, containers, network and volumes are now `velocitype`. The JWT issuer is
+  now `velocitype`, so existing sessions refresh into new tokens on next request.
 
 ## [0.22.0] - 2026-07-05
 
@@ -287,7 +300,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/adi-infra/typeforge/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/adi-infra/typeforge/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/adi-infra/typeforge/compare/v0.20.3...v0.21.0
 [0.20.3]: https://github.com/adi-infra/typeforge/compare/v0.20.2...v0.20.3

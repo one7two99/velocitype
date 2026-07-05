@@ -1,5 +1,6 @@
-# TypeForge — production compose
+# Velocitype — production compose
 # Only Caddy exposes ports to the host. db/redis stay on the internal network.
+name: velocitype
 services:
   caddy:
     image: caddy:2-alpine
@@ -19,7 +20,7 @@ services:
         condition: service_started
       frontend:
         condition: service_completed_successfully
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
   # One-shot builder: compiles the SPA into the ./frontend/dist bind mount that
   # Caddy serves, then exits. Rebuilds on every `up`; skip with
@@ -28,7 +29,7 @@ services:
     build: ./frontend
     volumes:
       - ./frontend/dist:/app/dist
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
   api:
     build: ./backend
@@ -55,7 +56,7 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
   db:
     image: postgres:16-alpine
@@ -66,8 +67,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
       POSTGRES_DB: postgres
       # Consumed by the init script to provision the app role + database:
-      APP_DB: ${POSTGRES_DB:-typeforge}
-      APP_USER: ${POSTGRES_APP_USER:-typeforge_app}
+      APP_DB: ${POSTGRES_DB:-velocitype}
+      APP_USER: ${POSTGRES_APP_USER:-velocitype_app}
       APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -77,7 +78,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
   redis:
     image: redis:7-alpine
@@ -92,7 +93,7 @@ services:
       retries: 10
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
   # Local LLM server for coaching. Runs entirely on this host — no external API.
   ollama:
@@ -105,7 +106,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
-    networks: [typeforge_net]
+    networks: [velocitype_net]
     # GPU (optional): uncomment if the host has an NVIDIA GPU + container toolkit.
     # deploy:
     #   resources:
@@ -128,7 +129,7 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}
     entrypoint: ["/bin/sh", "-c", "ollama pull \"$${OLLAMA_MODEL}\""]
     restart: "no"
-    networks: [typeforge_net]
+    networks: [velocitype_net]
 
 volumes:
   caddy_data:
@@ -138,7 +139,7 @@ volumes:
   ollama_data:
 
 networks:
-  typeforge_net:
+  velocitype_net:
     driver: bridge
 
 secrets:

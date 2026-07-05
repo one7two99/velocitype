@@ -35,7 +35,7 @@ export const useSettings = create<SettingsState>()(
       setWordCount: (wordCount) => set({ wordCount }),
       setTargetWpm: (targetWpm) => set({ targetWpm }),
     }),
-    { name: "typeforge-settings" },
+    { name: "velocitype-settings" },
   ),
 );
 

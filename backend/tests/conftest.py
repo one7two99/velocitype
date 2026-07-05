@@ -47,7 +47,7 @@ _write_keys()
 
 TEST_DB_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://typeforge_app:dev_app_change_me@localhost:5432/typeforge",
+    "postgresql+asyncpg://velocitype_app:dev_app_change_me@localhost:5432/velocitype",
 )
 os.environ.setdefault("ENV", "development")
 os.environ["DATABASE_URL"] = TEST_DB_URL
