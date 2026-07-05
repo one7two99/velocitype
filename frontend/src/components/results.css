@@ -15,7 +15,7 @@
   border-radius: var(--radius);
   padding: 2rem;
   width: 100%;
-  max-width: 520px;
+  max-width: 580px;
   box-shadow: var(--shadow);
   animation: tf-slide-up 0.28s ease-out;
 }
@@ -77,13 +77,15 @@
   gap: 0.6rem;
   flex-wrap: nowrap;
 }
-/* Equal-width buttons that share the row and never wrap. */
+/* Equal-width buttons that share the row and never wrap. Comfortable horizontal
+   padding so labels (esp. the highlighted "Next Lesson") don't touch the edges;
+   a tighter label↔hint gap keeps the content compact and centered. */
 .tf-results-actions .tf-btn {
   flex: 1 1 0;
   min-width: 0;
   white-space: nowrap;
-  padding-left: 0.6rem;
-  padding-right: 0.6rem;
+  padding: 0.7rem 1.1rem;
+  gap: 0.4rem;
 }
 
 .tf-kbd {

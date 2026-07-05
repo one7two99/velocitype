@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.26.1",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "Session Complete: the buttons now have proper padding — 'Next Lesson' no longer touches its edges.",
+      ],
+    },
+  },
+  {
     version: "0.26.0",
     date: "2026-07-05",
     sections: {
