@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.20.1",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "Dashboard and Analysis data are refreshed reliably right after a session is saved.",
+      ],
+    },
+  },
+  {
     version: "0.20.0",
     date: "2026-07-05",
     sections: {
