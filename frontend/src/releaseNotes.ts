@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.20.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Recent Sessions on the Dashboard now tag AI coaching drills with an 'AI Drill' badge.",
+      ],
+    },
+  },
+  {
     version: "0.19.1",
     date: "2026-07-05",
     sections: {

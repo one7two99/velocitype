@@ -9,6 +9,12 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-07-05
+
+### Added
+- Coach drill sessions are recorded with a dedicated `coach_drill` mode, and the
+  Dashboard's Recent Sessions table shows an "AI Drill" tag for them.
+
 ## [0.19.1] - 2026-07-05
 
 ### Changed
@@ -229,7 +235,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/adi-infra/typeforge/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/adi-infra/typeforge/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/adi-infra/typeforge/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/adi-infra/typeforge/compare/v0.17.0...v0.18.0
