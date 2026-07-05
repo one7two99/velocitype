@@ -9,6 +9,13 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-07-05
+
+### Added
+- WPM threshold slider on the Analysis page that drives the Speed heatmap: drag
+  to see which keys reach a chosen WPM (green) vs fall short (red), with a live
+  "reached / measured" count. Starts at your configured target speed.
+
 ## [0.18.0] - 2026-07-05
 
 ### Added
@@ -216,7 +223,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/adi-infra/typeforge/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/adi-infra/typeforge/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/adi-infra/typeforge/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/adi-infra/typeforge/compare/v0.15.0...v0.16.0
