@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.31.2",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "AI coach drills now reflect your latest session's metrics (the next drill is fetched after results are saved, not one session behind).",
+      ],
+      changed: [
+        "More varied drills early on: with only a few unlocked keys, drills mix in varied practice combos instead of repeating the same couple of words.",
+      ],
+    },
+  },
+  {
     version: "0.31.1",
     date: "2026-07-05",
     sections: {
