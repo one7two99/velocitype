@@ -9,6 +9,13 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-07-05
+
+### Added
+- A thin session progress line on the Trainer: a depleting countdown in timed
+  mode (turns warm near the end) and a filling lesson-progress bar in word-count
+  mode.
+
 ## [0.16.0] - 2026-07-05
 
 ### Added
@@ -195,7 +202,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/adi-infra/typeforge/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/adi-infra/typeforge/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/adi-infra/typeforge/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/adi-infra/typeforge/compare/v0.13.0...v0.14.0
