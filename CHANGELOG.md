@@ -9,6 +9,14 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-07-05
+
+### Changed
+- The username in the top-right is now a dropdown menu containing Profile,
+  Settings, and Log out. Profile and Settings were removed from the main
+  navigation, which is now Trainer / Dashboard / Analysis / Coach. Their
+  keyboard shortcuts (`p`, `s`) still work.
+
 ## [0.13.0] - 2026-07-05
 
 ### Added
@@ -174,7 +182,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/adi-infra/typeforge/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/adi-infra/typeforge/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/adi-infra/typeforge/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/adi-infra/typeforge/compare/v0.10.0...v0.11.0

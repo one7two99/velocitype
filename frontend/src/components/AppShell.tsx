@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { authApi } from "../api/endpoints";
-import { useAuth, useClearAuth } from "../hooks/useAuth";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { ReleaseNotes } from "./ReleaseNotes";
+import { UserMenu } from "./UserMenu";
 import "./app-shell.css";
 
 const links = [
@@ -10,24 +10,11 @@ const links = [
   { to: "/dashboard", label: "Dashboard", end: false },
   { to: "/analysis", label: "Analysis", end: false },
   { to: "/coach", label: "Coach", end: false },
-  { to: "/settings", label: "Settings", end: false },
-  { to: "/profile", label: "Profile", end: false },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const clearAuth = useClearAuth();
-  const navigate = useNavigate();
   const [showReleases, setShowReleases] = useState(false);
-
-  async function handleLogout() {
-    try {
-      await authApi.logout();
-    } finally {
-      clearAuth();
-      navigate("/login", { replace: true });
-    }
-  }
 
   return (
     <div className="tf-shell">
@@ -57,10 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             v{__APP_VERSION__}
           </button>
-          <span className="tf-user mono">{user?.username}</span>
-          <button className="tf-logout" onClick={handleLogout}>
-            Log out
-          </button>
+          <UserMenu username={user?.username} />
         </div>
       </header>
       <main className="tf-main">{children}</main>
