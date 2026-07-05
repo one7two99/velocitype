@@ -75,7 +75,15 @@
 .tf-results-actions {
   display: flex;
   gap: 0.6rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+/* Equal-width buttons that share the row and never wrap. */
+.tf-results-actions .tf-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
 }
 
 .tf-kbd {
@@ -90,4 +98,6 @@
 
 @media (max-width: 480px) {
   .tf-results-stats { grid-template-columns: repeat(2, 1fr); }
+  /* Drop the keyboard hints on narrow screens so labels always fit one line. */
+  .tf-results-actions .tf-kbd { display: none; }
 }

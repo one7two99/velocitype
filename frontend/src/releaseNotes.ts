@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.20.3",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "Session Complete: the Next Lesson / Try Again / Dashboard buttons now always stay on one row (Dashboard no longer wraps).",
+      ],
+    },
+  },
+  {
     version: "0.20.2",
     date: "2026-07-05",
     sections: {
