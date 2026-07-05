@@ -79,9 +79,33 @@ QWERTY = Layout(
 )
 
 
+# Corne (crkbd) — a 3x6 + 3-thumb split. The two extra outer columns and the
+# third thumb are modifiers/layer keys in typical keymaps, so the *trainable*
+# character set is identical to the 3x5 boards; only the physical picture (drawn
+# by the frontend) differs. We ship both the Colemak-DH and QWERTY letterings.
+CORNE_COLEMAK_DH = Layout(
+    id="corne_colemak_dh",
+    name="Corne — Colemak-DH",
+    hand_map=dict(FERRIS_SWEEP_COLEMAK_DH.hand_map),
+    finger_map=dict(FERRIS_SWEEP_COLEMAK_DH.finger_map),
+    thumb_keys=["gui", "space", "enter", "backspace", "sym", "alt"],
+)
+
+
+CORNE_QWERTY = Layout(
+    id="corne_qwerty",
+    name="Corne — QWERTY",
+    hand_map=dict(QWERTY.hand_map),
+    finger_map=dict(QWERTY.finger_map),
+    thumb_keys=["gui", "space", "enter", "backspace", "sym", "alt"],
+)
+
+
 LAYOUTS: dict[str, Layout] = {
     FERRIS_SWEEP_COLEMAK_DH.id: FERRIS_SWEEP_COLEMAK_DH,
     QWERTY.id: QWERTY,
+    CORNE_COLEMAK_DH.id: CORNE_COLEMAK_DH,
+    CORNE_QWERTY.id: CORNE_QWERTY,
 }
 
 DEFAULT_LAYOUT_ID = FERRIS_SWEEP_COLEMAK_DH.id

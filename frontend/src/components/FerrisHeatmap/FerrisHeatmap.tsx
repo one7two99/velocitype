@@ -118,6 +118,28 @@ export function FerrisHeatmap({
         aria-label={`Keyboard heatmap by ${metric}`}
       >
         {keys.map((k) => {
+          // Non-trainable modifier keys (Corne outer columns): greyed, inert.
+          if (k.deco) {
+            return (
+              <g key={`${k.hand}-${k.x}-${k.y}`} transform={`translate(${k.x},${k.y})`}>
+                <rect
+                  width={KEY_SIZE}
+                  height={KEY_SIZE}
+                  rx={7}
+                  className="tf-key-deco"
+                />
+                <text
+                  x={KEY_SIZE / 2}
+                  y={KEY_SIZE / 2}
+                  className="tf-key-deco-label"
+                  dominantBaseline="central"
+                  textAnchor="middle"
+                >
+                  {k.label.length > 3 ? k.label.slice(0, 3) : k.label}
+                </text>
+              </g>
+            );
+          }
           const cell = byChar.get(k.char);
           const overlay = overlayFor(cell, metric, target);
           return (

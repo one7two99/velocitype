@@ -9,6 +9,21 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-07-05
+
+### Added
+- **Corne keyboard layout.** Two new selectable layouts — *Corne — Colemak-DH*
+  and *Corne — QWERTY* — modelling the 3×6 + 3-thumb split. The heatmap now
+  renders the Corne's extra outer columns and third thumb as greyed, non-trainable
+  modifier keys (Tab/Ctrl/Shift, `'`/Bksp/Enter, and the thumb cluster), so the
+  board is drawn truthfully while training stays on the 30 letter keys. Switch
+  layouts under Settings → Training → Layout.
+
+### Changed
+- Heatmap geometry is now driven per-layout (variable column count, thumb count,
+  and non-trainable "decoration" keys) instead of assuming a fixed 3×5 + 2-thumb
+  board.
+
 ## [0.21.0] - 2026-07-05
 
 ### Added
@@ -272,7 +287,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/adi-infra/typeforge/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/adi-infra/typeforge/compare/v0.20.3...v0.21.0
 [0.20.3]: https://github.com/adi-infra/typeforge/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/adi-infra/typeforge/compare/v0.20.1...v0.20.2
