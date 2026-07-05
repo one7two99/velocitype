@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.17.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "A thin session progress line on the Trainer: it runs down as your time elapses in timed mode, and fills up with lesson progress in word-count mode.",
+      ],
+    },
+  },
+  {
     version: "0.16.0",
     date: "2026-07-05",
     sections: {
