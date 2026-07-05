@@ -1,4 +1,4 @@
-"""TypeForge API application factory."""
+"""Velocitype API application factory."""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="TypeForge API",
+        title="Velocitype API",
         version=__version__,
         description="Adaptive touch-typing trainer for split keyboards.",
         docs_url="/api/docs",

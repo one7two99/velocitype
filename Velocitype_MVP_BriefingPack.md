@@ -1,4 +1,4 @@
-# TypeForge — MVP Briefing Pack
+# Velocitype — MVP Briefing Pack
 **For implementation with Claude Code**
 Version 1.0 | June 2026
 
@@ -6,7 +6,9 @@ Version 1.0 | June 2026
 
 ## Mission
 
-Build the world's best touch typing trainer for serious keyboard enthusiasts on split keyboards. TypeForge combines the adaptive key-learning intelligence of keybr.com with the clean, competitive session UX of monkeytype.com — self-hosted, privacy-respecting, and built for the Ferris Sweep from day one.
+> Velocitype — the world's fastest typing trainer doesn't run in the cloud, it runs on your localhost. Every session gets torn apart by a local AI model, every mistake turned into a targeted drill. Made by split keyboard nerds who obsess over every layer and homerow mod, for the people who get it. Not a single byte leaves your machine. Your keyboard, your data, your speed.
+
+Build the world's best touch typing trainer for serious keyboard enthusiasts on split keyboards. Velocitype combines the adaptive key-learning intelligence of keybr.com with the clean, competitive session UX of monkeytype.com — self-hosted, privacy-respecting, and built for the Ferris Sweep from day one.
 
 ---
 
@@ -38,7 +40,7 @@ Internet
     └── /*      ──→  Vite Static Build (served by Caddy)
 ```
 
-All services on an internal Docker network `typeforge_net`. Only Caddy exposes ports to host.
+All services on an internal Docker network `velocitype_net`. Only Caddy exposes ports to host.
 
 ---
 
@@ -51,7 +53,7 @@ All services on an internal Docker network `typeforge_net`. Only Caddy exposes p
 - **Headers**: Caddy sets `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin`.
 - **Input validation**: All API inputs validated by Pydantic v2 models. No raw SQL — SQLAlchemy ORM only.
 - **Secrets**: All secrets via environment variables. `.env` in `.gitignore`. `docker-compose.yml` references `${VAR}` only.
-- **DB**: PostgreSQL not exposed outside Docker network. `postgres` superuser password required, app uses a least-privilege `typeforge_app` role.
+- **DB**: PostgreSQL not exposed outside Docker network. `postgres` superuser password required, app uses a least-privilege `velocitype_app` role.
 - **Dependencies**: `pip-audit` and `npm audit` in CI pre-commit hook.
 
 ---
@@ -168,7 +170,7 @@ GET    /api/mcp/recommendations       → AI-ready prompt payload for coaching a
 
 ## 5. Adaptive Learning Engine
 
-This is TypeForge's core differentiator. Implemented as a pure Python module `engine/adaptive.py`.
+This is Velocitype's core differentiator. Implemented as a pure Python module `engine/adaptive.py`.
 
 ### Algorithm: Weighted Key Pool
 
@@ -362,8 +364,8 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: typeforge
-      POSTGRES_USER: typeforge_app
+      POSTGRES_DB: velocitype
+      POSTGRES_USER: velocitype_app
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: [pg_data:/var/lib/postgresql/data]
 
@@ -387,7 +389,7 @@ secrets:
 ## 10. Project File Structure
 
 ```
-typeforge/
+velocitype/
 ├── docker-compose.yml
 ├── docker-compose.override.yml
 ├── .env.example
@@ -543,7 +545,7 @@ Before calling MVP done, all of the following must pass:
 - Plateau detection: alert user when 7-day WPM variance < 1 WPM
 
 ### Milestone 4 — Claude Coaching Integration
-- Full MCP server implementation (`typeforge-mcp`) exposable to Claude Desktop / Claude Web
+- Full MCP server implementation (`velocitype-mcp`) exposable to Claude Desktop / Claude Web
 - `analyze_progress` tool: Claude ingests stats, returns structured training plan
 - `generate_drill` tool: Claude generates custom lesson text targeting specified weaknesses
 - Conversation history stored per-user; coaching thread accessible in app

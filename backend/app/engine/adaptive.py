@@ -1,4 +1,4 @@
-"""Adaptive learning engine — TypeForge's core differentiator (Section 5).
+"""Adaptive learning engine — Velocitype's core differentiator (Section 5).
 
 Pure, dependency-free, and fully unit-testable. The router layer feeds it plain
 ``KeyMetric`` records assembled from ``key_stats`` and hands back generated

@@ -49,8 +49,9 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     <div className="tf-auth">
       <form className="tf-auth-card" onSubmit={submit}>
         <div className="tf-auth-brand mono">
-          Type<span>Forge</span>
+          Veloci<span>type</span>
         </div>
+        <p className="tf-auth-tag">Your keyboard, your data, your speed.</p>
         <p className="tf-auth-sub">
           {isRegister ? "Create your account" : "Welcome back"}
         </p>
