@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.22.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Corne keyboard layout: choose Corne — Colemak-DH or Corne — QWERTY under Settings → Training → Layout. The heatmap draws the Corne's 3×6 grid and 3 thumb keys, with the extra outer columns shown as greyed modifier keys (training stays on the 30 letters).",
+      ],
+    },
+  },
+  {
     version: "0.21.0",
     date: "2026-07-05",
     sections: {

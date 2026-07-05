@@ -21,6 +21,20 @@
   pointer-events: none;
 }
 
+/* Non-trainable modifier keys (e.g. Corne outer columns). */
+.tf-key-deco {
+  fill: var(--bg-surface);
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+.tf-key-deco-label {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  pointer-events: none;
+}
+
 .tf-key-thumb {
   fill: var(--bg-surface);
   stroke: var(--border);

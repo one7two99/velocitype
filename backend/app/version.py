@@ -4,4 +4,4 @@ Must match ``frontend/package.json`` (enforced by a CI check). Bump both togethe
 on every release, alongside CHANGELOG.md and frontend/src/releaseNotes.ts.
 """
 
-__version__ = "0.21.0"
+__version__ = "0.22.0"
