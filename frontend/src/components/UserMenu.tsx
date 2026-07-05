@@ -56,9 +56,6 @@ export function UserMenu({ username }: { username?: string }) {
           <NavLink to="/profile" className={itemClass} role="menuitem" onClick={() => setOpen(false)}>
             Profile
           </NavLink>
-          <NavLink to="/settings" className={itemClass} role="menuitem" onClick={() => setOpen(false)}>
-            Settings
-          </NavLink>
           <div className="tf-usermenu-sep" />
           <button
             className="tf-usermenu-item tf-usermenu-item--danger"
