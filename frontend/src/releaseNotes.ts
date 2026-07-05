@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.24.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Choose your AI provider in Settings → AI Provider: the local Ollama model (default, fully private) or Mistral (EU cloud). Enter a Mistral API key (stored encrypted, never shown again), pick the model, and for Ollama download new models right from Settings with a progress indicator.",
+      ],
+      changed: [
+        "The AI Coach page shows the active provider/model and clearly flags when Mistral is used (your data leaves the machine). Ollama stays the private default.",
+      ],
+    },
+  },
+  {
     version: "0.23.0",
     date: "2026-07-05",
     sections: {

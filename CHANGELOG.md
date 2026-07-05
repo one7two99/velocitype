@@ -9,6 +9,26 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-07-05
+
+### Added
+- **Pluggable AI provider (per user).** Settings → AI Provider lets each account
+  choose where coaching runs: the local **Ollama** model (default, fully private)
+  or **Mistral** (EU cloud). Pick the model for either provider, and — for
+  Ollama — **download new models** from Settings with a live progress indicator.
+- Mistral integration calls `https://api.mistral.ai` **server-side**; the API key
+  is entered in Settings, stored **encrypted at rest** (Fernet key derived from
+  the JWT private key), and never returned to the browser. Analysis/drills use the
+  selected provider; drills keep their deterministic fallback.
+- New endpoints under `/api/coach`: `GET`/`PUT /config`, `GET /models`,
+  `POST`/`GET /models/pull`; `GET /status` now reports the active provider. New
+  `user_ai_config` table (migration `0004`).
+
+### Changed
+- The AI Coach page reflects the active provider/model and states the privacy
+  trade-off when Mistral is selected (data leaves your machine). Ollama remains
+  the private default.
+
 ## [0.23.0] - 2026-07-05
 
 ### Changed
@@ -300,7 +320,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/adi-infra/typeforge/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/adi-infra/typeforge/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/adi-infra/typeforge/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/adi-infra/typeforge/compare/v0.20.3...v0.21.0

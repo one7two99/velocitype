@@ -15,14 +15,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.engine import adaptive
 from app.engine.layouts import get_layout
+from app.models.ai_config import UserAiConfig
 from app.models.prompt import UserPrompt
 from app.models.user import User
 from app.schemas.session import WeakKeyInfo
-from app.services import ollama
+from app.services import crypto, llm
 from app.services.key_stats import build_key_metrics
 from app.services.mcp import build_summary
+
+_settings = get_settings()
 
 # ── Default prompts (user-overridable, per-user, in Settings → AI Settings) ──
 # Instruction templates use placeholders: {{data}} (analysis) / {{focus}} (drill).
@@ -76,6 +80,24 @@ async def get_effective_prompts(db: AsyncSession, user_id) -> dict[str, str]:
     return out
 
 
+async def get_ai_config(db: AsyncSession, user_id) -> llm.LLMConfig:
+    """Resolve the user's provider/model/key, applying deployment defaults."""
+    row = (
+        await db.execute(select(UserAiConfig).where(UserAiConfig.user_id == user_id))
+    ).scalar_one_or_none()
+    provider = (row.provider if row and row.provider else llm.OLLAMA)
+    if provider == llm.MISTRAL:
+        model = (row.mistral_model if row else None) or _settings.mistral_default_model
+        api_key = (
+            crypto.decrypt(row.mistral_api_key_enc)
+            if row and row.mistral_api_key_enc
+            else None
+        )
+        return llm.LLMConfig(provider=llm.MISTRAL, model=model, api_key=api_key)
+    model = (row.ollama_model if row else None) or _settings.ollama_model
+    return llm.LLMConfig(provider=llm.OLLAMA, model=model)
+
+
 def _inject(template: str, placeholder: str, value: str) -> str:
     """Substitute the data placeholder; if the user removed it, append the data so
     it's never silently dropped."""
@@ -84,15 +106,17 @@ def _inject(template: str, placeholder: str, value: str) -> str:
     return f"{template}\n\n{value}"
 
 
-async def analyze(db: AsyncSession, user: User, layout_id: str) -> str:
-    """Return a short natural-language coaching analysis for the user."""
+async def analyze(db: AsyncSession, user: User, layout_id: str) -> tuple[str, str]:
+    """Return (analysis text, model used) for the user's active provider."""
+    cfg = await get_ai_config(db, user.id)
     prompts = await get_effective_prompts(db, user.id)
     summary = await build_summary(db, user, layout_id)
     data = json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)
     user_prompt = _inject(prompts["analysis_user"], "{{data}}", data)
-    return await ollama.generate(
-        user_prompt, system=prompts["analysis_system"], num_predict=280
+    text = await llm.generate(
+        cfg, user_prompt, system=prompts["analysis_system"], max_tokens=280
     )
+    return text, cfg.model
 
 
 def _weak_info(metrics, scored) -> list[WeakKeyInfo]:
@@ -149,12 +173,14 @@ def _sanitize_lesson(raw: str, allowed_letters: set[str], min_words: int) -> str
 
 async def drill(
     db: AsyncSession, user: User, layout_id: str
-) -> tuple[str, list[WeakKeyInfo], str]:
-    """Generate a drill lesson via the LLM. Returns (lesson, weak_keys, source)
-    where source is 'ollama' or 'fallback'."""
+) -> tuple[str, list[WeakKeyInfo], str, str]:
+    """Generate a drill lesson via the LLM. Returns (lesson, weak_keys, source,
+    model) where source is the provider name or 'fallback'."""
     layout = get_layout(layout_id)
     if layout is None:
         raise ValueError(f"unknown layout '{layout_id}'")
+
+    cfg = await get_ai_config(db, user.id)
 
     metrics = await build_key_metrics(db, user.id, layout_id)
     scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
@@ -171,14 +197,14 @@ async def drill(
     # Generate + verify: the drill must be typeable AND actually over-represent the
     # focus keys. Retry once, else use the deterministic generator (which weights
     # weak keys 3x and injects clusters for rare ones — coverage guaranteed).
-    source = "ollama"
+    source = cfg.provider
     lesson: str | None = None
     for _ in range(2):
         try:
-            raw = await ollama.generate(
-                prompt, system=prompts["drill_system"], num_predict=160
+            raw = await llm.generate(
+                cfg, prompt, system=prompts["drill_system"], max_tokens=160
             )
-        except ollama.OllamaError:
+        except llm.LLMError:
             break
         candidate = _sanitize_lesson(raw, allowed_letters, min_words=40)
         if candidate and _covers_focus(candidate, weak_chars):
@@ -189,8 +215,8 @@ async def drill(
         lesson = adaptive.generate_lesson(weak_chars, layout.characters)
         source = "fallback"
 
-    return lesson, weak_info, source
+    return lesson, weak_info, source, cfg.model
 
 
-async def status() -> dict:
-    return await ollama.status()
+async def status(db: AsyncSession, user: User) -> dict:
+    return await llm.status(await get_ai_config(db, user.id))

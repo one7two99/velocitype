@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { lessonsApi, mcpApi } from "../api/endpoints";
 import type { ApiKeyCreated } from "../api/types";
+import { AiProvider } from "../components/AiProvider";
 import { AiSettings } from "../components/AiSettings";
 import { Button, Card, Field, Input, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
@@ -136,6 +137,8 @@ export function SettingsPage() {
           </p>
         </Field>
       </Card>
+
+      <AiProvider />
 
       <AiSettings />
 

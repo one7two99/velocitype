@@ -44,6 +44,7 @@ export function CoachPage() {
 
   const modelReady = status.data?.model_ready;
   const reachable = status.data?.reachable;
+  const isMistral = status.data?.provider === "mistral";
 
   return (
     <div className="tf-coach">
@@ -103,16 +104,32 @@ export function CoachPage() {
       <Card>
         <h3 className="tf-card-title">AI Coach</h3>
         <p className="tf-settings-note">
-          Coaching runs on a local Ollama model
-          {status.data ? ` (${status.data.model})` : ""} — nothing leaves your machine.
+          {isMistral ? (
+            <>
+              Coaching runs on Mistral (EU cloud)
+              {status.data ? ` (${status.data.model})` : ""} — your stats are sent to
+              Mistral. Switch to local Ollama in Settings for full privacy.
+            </>
+          ) : (
+            <>
+              Coaching runs on a local Ollama model
+              {status.data ? ` (${status.data.model})` : ""} — nothing leaves your machine.
+            </>
+          )}
         </p>
 
         {status.isLoading ? (
           <Spinner />
         ) : !reachable ? (
-          <Alert>
-            Local model server not reachable. Is the <code>ollama</code> service running?
-          </Alert>
+          isMistral ? (
+            <Alert>
+              Mistral isn't reachable. Set a valid API key in Settings → AI Provider.
+            </Alert>
+          ) : (
+            <Alert>
+              Local model server not reachable. Is the <code>ollama</code> service running?
+            </Alert>
+          )
         ) : !modelReady ? (
           <div className="tf-coach-status">
             <Spinner />
