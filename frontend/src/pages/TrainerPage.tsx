@@ -44,7 +44,8 @@ export function TrainerPage() {
           text = opts.reuseLesson;
           resp = await sessionsApi.start({
             layout_id: layoutId,
-            mode: "custom",
+            // Retrying a coach drill stays tagged as a coach drill.
+            mode: drillActive ? "coach_drill" : "custom",
             custom_text: text,
           });
         } else if (drillActive) {
@@ -63,7 +64,7 @@ export function TrainerPage() {
           text = drill;
           resp = await sessionsApi.start({
             layout_id: layoutId,
-            mode: "custom",
+            mode: "coach_drill",
             custom_text: drill,
           });
           // Kick off generation of the next drill for a smooth "Next Lesson".

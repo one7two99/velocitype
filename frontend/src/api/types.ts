@@ -1,6 +1,6 @@
 // Types mirroring the backend Pydantic schemas.
 
-export type SessionMode = "adaptive" | "fixed_text" | "custom";
+export type SessionMode = "adaptive" | "fixed_text" | "custom" | "coach_drill";
 
 export interface User {
   id: string;

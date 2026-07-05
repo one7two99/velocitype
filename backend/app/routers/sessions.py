@@ -81,7 +81,7 @@ async def start_session(
     }
 
     weak: list[WeakKeyInfo] = []
-    if payload.mode == "custom":
+    if payload.mode in ("custom", "coach_drill"):
         lesson = payload.custom_text or ""
     elif payload.mode == "adaptive":
         lesson, weak = await generate_adaptive_lesson(
