@@ -168,6 +168,22 @@ export interface CoachDrill {
   source: "ollama" | "fallback";
 }
 
+export interface CoachMetrics {
+  user: string;
+  generated_at: string;
+  layout: string;
+  lifetime: {
+    sessions: number;
+    total_time_minutes: number;
+    best_wpm: number | null;
+    avg_wpm_30d: number | null;
+    avg_accuracy_30d: number | null;
+  };
+  weak_keys: { char: string; error_rate: number; avg_latency_ms: number | null }[];
+  trend_7d: { wpm: number[]; accuracy: number[] };
+  coach_prompt: string;
+}
+
 // RFC 7807 problem+json
 export interface ProblemDetail {
   type: string;

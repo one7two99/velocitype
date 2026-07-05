@@ -13,29 +13,33 @@ function errText(err: unknown): string {
   return "Something went wrong.";
 }
 
+function fmtNum(v: number | null) {
+  return v == null ? "—" : Math.round(v).toString();
+}
+function fmtPct(v: number | null) {
+  return v == null ? "—" : `${(v * 100).toFixed(1)}%`;
+}
+
 export function CoachPage() {
   useNavHotkeys();
   const layoutId = useSettings((s) => s.layoutId);
-  const setPendingDrill = useCoachStore((s) => s.setPendingDrill);
+  const drillActive = useCoachStore((s) => s.drillActive);
+  const setDrillActive = useCoachStore((s) => s.setDrillActive);
   const navigate = useNavigate();
 
   const status = useQuery({
     queryKey: ["coach", "status"],
     queryFn: coachApi.status,
-    refetchInterval: (q) =>
-      q.state.data?.model_ready ? false : 5000, // poll while the model downloads
+    refetchInterval: (q) => (q.state.data?.model_ready ? false : 5000),
+  });
+
+  const metrics = useQuery({
+    queryKey: ["coach", "metrics", layoutId],
+    queryFn: () => coachApi.metrics(layoutId),
   });
 
   const analyze = useMutation({
     mutationFn: () => coachApi.analyze(layoutId),
-  });
-
-  const drill = useMutation({
-    mutationFn: () => coachApi.drill(layoutId),
-    onSuccess: (data) => {
-      setPendingDrill(data.lesson);
-      navigate("/");
-    },
   });
 
   const modelReady = status.data?.model_ready;
@@ -43,20 +47,71 @@ export function CoachPage() {
 
   return (
     <div className="tf-coach">
+      {/* Transparency: exactly the numbers the coach uses */}
+      <Card>
+        <h3 className="tf-card-title">What your coach sees</h3>
+        {metrics.isLoading ? (
+          <Spinner />
+        ) : metrics.data ? (
+          <>
+            <div className="tf-coach-metrics">
+              <div>
+                <span className="tf-coach-m-label">Avg WPM (30d)</span>
+                <span className="tf-coach-m-value mono">
+                  {fmtNum(metrics.data.lifetime.avg_wpm_30d)}
+                </span>
+              </div>
+              <div>
+                <span className="tf-coach-m-label">Avg accuracy (30d)</span>
+                <span className="tf-coach-m-value mono">
+                  {fmtPct(metrics.data.lifetime.avg_accuracy_30d)}
+                </span>
+              </div>
+              <div>
+                <span className="tf-coach-m-label">Best WPM</span>
+                <span className="tf-coach-m-value mono">
+                  {fmtNum(metrics.data.lifetime.best_wpm)}
+                </span>
+              </div>
+              <div>
+                <span className="tf-coach-m-label">Sessions</span>
+                <span className="tf-coach-m-value mono">
+                  {metrics.data.lifetime.sessions}
+                </span>
+              </div>
+            </div>
+            <div className="tf-coach-weak">
+              <span className="tf-coach-m-label">Weak keys:</span>{" "}
+              {metrics.data.weak_keys.length ? (
+                metrics.data.weak_keys.map((w) => (
+                  <span key={w.char} className="mono tf-coach-weakkey">
+                    {w.char} {(w.error_rate * 100).toFixed(0)}%
+                    {w.avg_latency_ms != null ? `/${Math.round(w.avg_latency_ms)}ms` : ""}
+                  </span>
+                ))
+              ) : (
+                <span className="tf-coach-m-label">none yet — type a few sessions</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="tf-chart-empty">No metrics yet.</div>
+        )}
+      </Card>
+
+      {/* Model + actions */}
       <Card>
         <h3 className="tf-card-title">AI Coach</h3>
         <p className="tf-settings-note">
           Coaching runs on a local Ollama model
-          {status.data ? ` (${status.data.model})` : ""} — nothing leaves your
-          machine.
+          {status.data ? ` (${status.data.model})` : ""} — nothing leaves your machine.
         </p>
 
         {status.isLoading ? (
           <Spinner />
         ) : !reachable ? (
           <Alert>
-            Local model server not reachable. Is the <code>ollama</code> service
-            running?
+            Local model server not reachable. Is the <code>ollama</code> service running?
           </Alert>
         ) : !modelReady ? (
           <div className="tf-coach-status">
@@ -75,13 +130,28 @@ export function CoachPage() {
             >
               {analyze.isPending ? "Analyzing…" : "Get analysis"}
             </Button>
-            <Button onClick={() => drill.mutate()} disabled={drill.isPending}>
-              {drill.isPending ? "Generating…" : "Generate drill & start"}
-            </Button>
+            {drillActive ? (
+              <>
+                <Button onClick={() => navigate("/")}>Go to Trainer</Button>
+                <Button variant="ghost" onClick={() => setDrillActive(false)}>
+                  Stop drills
+                </Button>
+                <span className="tf-coach-active mono">● drills active</span>
+              </>
+            ) : (
+              <Button
+                onClick={() => {
+                  setDrillActive(true);
+                  navigate("/");
+                }}
+              >
+                Start coaching drills
+              </Button>
+            )}
           </div>
         )}
 
-        {(analyze.isPending || drill.isPending) && (
+        {analyze.isPending && (
           <p className="tf-coach-hint">
             Local generation can take up to a minute or two on CPU — hang tight.
           </p>
@@ -89,7 +159,6 @@ export function CoachPage() {
       </Card>
 
       {analyze.isError && <Alert>{errText(analyze.error)}</Alert>}
-      {drill.isError && <Alert>{errText(drill.error)}</Alert>}
 
       {analyze.data && (
         <Card>
