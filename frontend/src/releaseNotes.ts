@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.16.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Live pace indicator on the Trainer: a calm meter showing how your rolling 10-second speed compares to your session average (±WPM).",
+      ],
+    },
+  },
+  {
     version: "0.15.0",
     date: "2026-07-05",
     sections: {
