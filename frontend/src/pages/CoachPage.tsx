@@ -95,6 +95,30 @@ export function CoachPage() {
                 <span className="tf-coach-m-label">none yet — type a few sessions</span>
               )}
             </div>
+            {metrics.data.weak_bigrams && metrics.data.weak_bigrams.length > 0 && (
+              <div className="tf-coach-weak">
+                <span className="tf-coach-m-label">Weak bigrams:</span>{" "}
+                {metrics.data.weak_bigrams.map((b) => (
+                  <span key={b.bigram} className="mono tf-coach-weakkey">
+                    {b.bigram}
+                    {b.class === "SFB" ? " (SFB)" : ""} {b.err_pct}%
+                    {b.consistency != null ? `/${Math.round(b.consistency * 100)}% steady` : ""}
+                  </span>
+                ))}
+              </div>
+            )}
+            {metrics.data.trigram_rollup && (
+              <div className="tf-coach-weak">
+                <span className="tf-coach-m-label">Rhythm:</span>{" "}
+                <span className="tf-coach-m-label">
+                  redirects {metrics.data.trigram_rollup.redirect_pct}% · SFB-chains{" "}
+                  {metrics.data.trigram_rollup.sfb_chain_pct}%
+                  {metrics.data.trigram_rollup.worst_redirect
+                    ? ` · worst redirect: ${metrics.data.trigram_rollup.worst_redirect}`
+                    : ""}
+                </span>
+              </div>
+            )}
           </>
         ) : (
           <div className="tf-chart-empty">No metrics yet.</div>

@@ -106,3 +106,19 @@
 .tf-status--needs-data {
   color: var(--text-muted);
 }
+.tf-status--choppy {
+  color: var(--accent);
+}
+
+/* Bigram class tag + same-finger-bigram row highlight */
+.tf-bg-class {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.tf-bg-class--sfb {
+  color: var(--heat-max);
+}
+.tf-keytable tbody tr.tf-row-sfb td.tf-key-cell {
+  color: var(--heat-max);
+}

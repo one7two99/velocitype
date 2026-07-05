@@ -15,6 +15,7 @@ import type {
   KeyHeatmap,
   KeystrokeIn,
   LayoutList,
+  NgramTable,
   NextLessonResponse,
   SessionCompleteResponse,
   SessionHistory,
@@ -83,6 +84,8 @@ export const statsApi = {
     api.get<StatsOverview>(`/api/stats/overview?layout_id=${layoutId}`),
   keys: (layoutId: string) =>
     api.get<KeyHeatmap>(`/api/stats/keys?layout_id=${layoutId}`),
+  ngrams: (layoutId: string) =>
+    api.get<NgramTable>(`/api/stats/ngrams?layout_id=${layoutId}`),
 };
 
 export const lessonsApi = {
@@ -107,11 +110,15 @@ export const coachApi = {
     api.get<CoachMetrics>(`/api/coach/metrics?layout_id=${layoutId}`),
   analyze: (layoutId: string) =>
     api.post<CoachAnalysis>(`/api/coach/analyze?layout_id=${layoutId}`),
-  drill: (layoutId: string, focusKeys?: string[]) =>
-    api.post<CoachDrill>(
+  drill: (layoutId: string, focusKeys?: string[], focusBigrams?: string[]) => {
+    const body: { focus_keys?: string[]; focus_bigrams?: string[] } = {};
+    if (focusBigrams && focusBigrams.length) body.focus_bigrams = focusBigrams;
+    else if (focusKeys && focusKeys.length) body.focus_keys = focusKeys;
+    return api.post<CoachDrill>(
       `/api/coach/drill?layout_id=${layoutId}`,
-      focusKeys && focusKeys.length ? { focus_keys: focusKeys } : undefined,
-    ),
+      Object.keys(body).length ? body : undefined,
+    );
+  },
   getPrompts: () => api.get<CoachPrompts>("/api/coach/prompts"),
   savePrompts: (custom: PromptCustom) =>
     api.put<CoachPrompts>("/api/coach/prompts", custom),

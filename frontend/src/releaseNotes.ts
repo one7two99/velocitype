@@ -15,6 +15,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.28.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Analysis now has a Bigram breakdown: see each letter pair's class (same-finger bigrams highlighted), error rate, speed, rhythm consistency and hitches — and generate a drill that targets exactly the pairs you pick.",
+        "The AI-Coach page shows your weak bigrams and a rhythm summary (redirects, SFB-chains, worst redirect).",
+      ],
+    },
+  },
+  {
     version: "0.27.0",
     date: "2026-07-05",
     sections: {

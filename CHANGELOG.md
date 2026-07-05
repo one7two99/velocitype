@@ -9,6 +9,21 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-07-05
+
+### Added
+- **Bigram / rhythm surface in the UI.** The Analysis page now has a **Bigram
+  breakdown** table (class, error %, WPM, rhythm consistency, hitch %, with
+  same-finger bigrams highlighted) — sortable and searchable. Tick the bigrams
+  you want and **Generate drill from N bigrams** starts a coach-drill session
+  targeting exactly those letter pairs (the `focus_bigrams` path from 0.27.0).
+- The **AI-Coach** page ("What your coach sees") now shows your weak bigrams
+  (with SFB flags) and a rhythm line (redirect % / SFB-chain % / worst redirect).
+
+### Changed
+- The Trainer's coach-drill banner shows the targeted letter pairs when a bigram
+  drill is active.
+
 ## [0.27.0] - 2026-07-05
 
 ### Added
@@ -374,7 +389,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.27.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.0...HEAD
+[0.28.0]: https://github.com/adi-infra/typeforge/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/adi-infra/typeforge/compare/v0.26.1...v0.27.0
 [0.26.1]: https://github.com/adi-infra/typeforge/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/adi-infra/typeforge/compare/v0.25.0...v0.26.0
