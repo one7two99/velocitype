@@ -16,7 +16,9 @@ drills — nothing is ever sent to an external API.
 - **Frontend:** React 18 + TypeScript + Vite, Zustand, TanStack Query, recharts
 - **Edge:** Caddy 2 (reverse proxy, security headers, static SPA)
 - **Auth:** Argon2id, RS256 JWT in `httpOnly`/`SameSite=Strict` cookies, refresh-token rotation
-- **Coaching:** local Ollama LLM (no external API) for analysis + drill generation
+- **Coaching:** local Ollama LLM by default (nothing leaves your machine); each
+  user can optionally switch to **Mistral** (EU cloud) in Settings and enter their
+  own API key (stored encrypted). Ollama models can be downloaded from Settings.
 
 ## Quick start
 

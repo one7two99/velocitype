@@ -15,7 +15,7 @@ async def _register(client, user):
 async def test_analyze_uses_local_model(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def fake_generate(prompt, system=None, num_predict=300):
+    async def fake_generate(prompt, system=None, *, model=None, num_predict=300):
         assert "Trainee data" in prompt
         return "You're doing well. Focus on q and x. Practice short drills daily."
 
@@ -31,7 +31,7 @@ async def test_analyze_uses_local_model(client, unique_user, monkeypatch):
 async def test_analyze_unavailable_returns_503(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def boom(prompt, system=None, num_predict=300):
+    async def boom(prompt, system=None, *, model=None, num_predict=300):
         raise ollama.OllamaError("connection refused")
 
     monkeypatch.setattr(ollama, "generate", boom)
@@ -44,7 +44,7 @@ async def test_analyze_unavailable_returns_503(client, unique_user, monkeypatch)
 async def test_drill_from_ollama(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def fake_generate(prompt, system=None, num_predict=300):
+    async def fake_generate(prompt, system=None, *, model=None, num_predict=300):
         return "the quick brown fox jumps over the lazy dog " * 6
 
     monkeypatch.setattr(ollama, "generate", fake_generate)
@@ -60,7 +60,7 @@ async def test_drill_from_ollama(client, unique_user, monkeypatch):
 async def test_drill_falls_back_when_model_down(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def boom(prompt, system=None, num_predict=300):
+    async def boom(prompt, system=None, *, model=None, num_predict=300):
         raise ollama.OllamaError("down")
 
     monkeypatch.setattr(ollama, "generate", boom)
@@ -76,7 +76,7 @@ async def test_drill_falls_back_when_model_down(client, unique_user, monkeypatch
 async def test_drill_sanitizes_unusable_output(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def junk(prompt, system=None, num_predict=300):
+    async def junk(prompt, system=None, *, model=None, num_predict=300):
         return "!!! 123 @@@"  # nothing typeable
 
     monkeypatch.setattr(ollama, "generate", junk)
@@ -89,14 +89,19 @@ async def test_drill_sanitizes_unusable_output(client, unique_user, monkeypatch)
 async def test_status(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
-    async def fake_status():
-        return {"reachable": True, "model": "qwen3.5:4b", "model_ready": True}
+    async def fake_status(model=None):
+        return {"reachable": True, "model": model or "qwen3.5:4b", "model_ready": True}
 
     monkeypatch.setattr(ollama, "status", fake_status)
 
     resp = await client.get("/api/coach/status")
     assert resp.status_code == 200
-    assert resp.json() == {"reachable": True, "model": "qwen3.5:4b", "model_ready": True}
+    assert resp.json() == {
+        "provider": "ollama",
+        "reachable": True,
+        "model": "qwen3.5:4b",
+        "model_ready": True,
+    }
 
 
 def test_covers_focus():
@@ -128,7 +133,7 @@ async def test_drill_reverifies_focus_and_falls_back(client, unique_user, monkey
         json={"wpm_raw": 40, "wpm_net": 38, "accuracy": 0.5, "consistency": 0.8},
     )
 
-    async def no_q(prompt, system=None, num_predict=300):
+    async def no_q(prompt, system=None, *, model=None, num_predict=300):
         return "the and for with that have from they this " * 6  # contains no 'q'
 
     monkeypatch.setattr(ollama, "generate", no_q)
@@ -181,7 +186,7 @@ async def test_custom_prompt_is_used_in_analyze(client, unique_user, monkeypatch
     )
     captured = {}
 
-    async def capture(prompt, system=None, num_predict=300):
+    async def capture(prompt, system=None, *, model=None, num_predict=300):
         captured["prompt"] = prompt
         captured["system"] = system
         return "ok"

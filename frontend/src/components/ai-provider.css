@@ -1,0 +1,40 @@
+.tf-provider-toggle {
+  margin-bottom: 0.75rem;
+}
+
+.tf-provider-privacy {
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  line-height: 1.5;
+}
+.tf-provider-privacy--good {
+  background: color-mix(in srgb, var(--correct) 12%, transparent);
+  color: var(--text-primary);
+}
+.tf-provider-privacy--warn {
+  background: color-mix(in srgb, var(--heat-max) 14%, transparent);
+  color: var(--text-primary);
+}
+
+.tf-pull-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.tf-pull-row .tf-input {
+  flex: 1;
+}
+
+.tf-pull-status {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.4rem 0 0;
+}
+
+.tf-key-set {
+  color: var(--correct);
+  font-weight: 600;
+  font-size: 0.72rem;
+}

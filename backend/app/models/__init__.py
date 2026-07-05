@@ -1,5 +1,6 @@
 """SQLAlchemy models. Importing this package registers all tables on Base.metadata."""
 from app.models.base import Base
+from app.models.ai_config import UserAiConfig
 from app.models.api_key import ApiKey
 from app.models.key_stat import KeyStat
 from app.models.keystroke import Keystroke
@@ -19,4 +20,5 @@ __all__ = [
     "ApiKey",
     "Layout",
     "UserPrompt",
+    "UserAiConfig",
 ]

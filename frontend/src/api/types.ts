@@ -146,9 +146,44 @@ export interface ApiKeyCreated {
 }
 
 export interface CoachStatus {
+  provider: string;
   reachable: boolean;
   model: string;
   model_ready: boolean;
+}
+
+export type AiProvider = "ollama" | "mistral";
+
+export interface AiConfig {
+  provider: AiProvider;
+  ollama_model: string;
+  mistral_model: string;
+  mistral_key_set: boolean;
+  ollama_default: string;
+  mistral_default: string;
+}
+
+export interface AiConfigUpdate {
+  provider?: AiProvider;
+  ollama_model?: string;
+  mistral_model?: string;
+  // null = leave unchanged, "" = clear, non-empty = set
+  mistral_api_key?: string | null;
+}
+
+export interface ModelList {
+  provider: string;
+  models: string[];
+  installed: string[];
+  reachable: boolean;
+}
+
+export interface PullStatus {
+  name: string;
+  status: string;
+  completed: boolean;
+  percent: number | null;
+  error: string | null;
 }
 
 export interface CoachAnalysis {
@@ -165,7 +200,7 @@ export interface CoachDrill {
   lesson: string;
   word_count: number;
   weak_keys: WeakKeyInfo[];
-  source: "ollama" | "fallback";
+  source: string; // provider name ("ollama" | "mistral") or "fallback"
 }
 
 export interface PromptSet {

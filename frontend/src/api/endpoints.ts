@@ -1,5 +1,7 @@
 import { api } from "./client";
 import type {
+  AiConfig,
+  AiConfigUpdate,
   ApiKeyCreated,
   ApiKeyInfo,
   CoachAnalysis,
@@ -7,7 +9,9 @@ import type {
   CoachMetrics,
   CoachPrompts,
   CoachStatus,
+  ModelList,
   PromptCustom,
+  PullStatus,
   KeyHeatmap,
   KeystrokeIn,
   LayoutList,
@@ -108,4 +112,13 @@ export const coachApi = {
   getPrompts: () => api.get<CoachPrompts>("/api/coach/prompts"),
   savePrompts: (custom: PromptCustom) =>
     api.put<CoachPrompts>("/api/coach/prompts", custom),
+  getConfig: () => api.get<AiConfig>("/api/coach/config"),
+  saveConfig: (body: AiConfigUpdate) =>
+    api.put<AiConfig>("/api/coach/config", body),
+  listModels: (provider: string) =>
+    api.get<ModelList>(`/api/coach/models?provider=${provider}`),
+  pullModel: (name: string) =>
+    api.post<PullStatus>("/api/coach/models/pull", { name }),
+  pullStatus: (name: string) =>
+    api.get<PullStatus>(`/api/coach/models/pull?name=${encodeURIComponent(name)}`),
 };

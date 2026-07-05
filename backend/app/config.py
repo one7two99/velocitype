@@ -52,6 +52,13 @@ class Settings(BaseSettings):
     ollama_model: str = Field(default="qwen3.5:4b")
     ollama_timeout_s: float = Field(default=240.0)
 
+    # ── Mistral (optional EU cloud LLM coaching) ────────────────────────────
+    # No global API key — keys are per-user, entered in Settings and stored
+    # encrypted. This is only the endpoint + default model.
+    mistral_base_url: str = Field(default="https://api.mistral.ai")
+    mistral_default_model: str = Field(default="mistral-small-latest")
+    mistral_timeout_s: float = Field(default=60.0)
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def cors_origin_list(self) -> list[str]:
