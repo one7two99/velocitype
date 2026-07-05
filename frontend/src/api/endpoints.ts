@@ -23,6 +23,7 @@ import type {
   SessionStartResponse,
   StatsOverview,
   User,
+  UserSettings,
 } from "./types";
 
 export const authApi = {
@@ -88,6 +89,12 @@ export const statsApi = {
     api.get<KeyHeatmap>(`/api/stats/keys?layout_id=${layoutId}`),
   ngrams: (layoutId: string) =>
     api.get<NgramTable>(`/api/stats/ngrams?layout_id=${layoutId}`),
+};
+
+export const settingsApi = {
+  get: () => api.get<UserSettings>("/api/settings"),
+  save: (body: Omit<UserSettings, "saved">) =>
+    api.put<UserSettings>("/api/settings", body),
 };
 
 export const lessonsApi = {

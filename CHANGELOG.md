@@ -9,6 +9,17 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-07-05
+
+### Added
+- **Settings sync across browsers.** UI/training preferences (theme, layout,
+  session goal, duration, word count, target WPM) are now stored per user in the
+  database (`user_settings`, migration `0006`) and synced across devices/browsers:
+  they hydrate from the server on sign-in and save back on change. `localStorage`
+  still provides an instant local value and offline fallback. New endpoints
+  `GET`/`PUT /api/settings`. Preferences are kept when using "Delete all data"
+  (they are settings, not metrics).
+
 ## [0.29.0] - 2026-07-05
 
 ### Added
@@ -416,7 +427,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.29.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.30.0...HEAD
+[0.30.0]: https://github.com/adi-infra/typeforge/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/adi-infra/typeforge/compare/v0.28.2...v0.29.0
 [0.28.2]: https://github.com/adi-infra/typeforge/compare/v0.28.1...v0.28.2
 [0.28.1]: https://github.com/adi-infra/typeforge/compare/v0.28.0...v0.28.1
