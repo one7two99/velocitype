@@ -25,6 +25,7 @@ from app.schemas.coach import (
     AiConfigUpdate,
     CoachAnalysis,
     CoachDrill,
+    CoachMetricsResponse,
     CoachPrompts,
     CoachPromptsUpdate,
     CoachStatus,
@@ -35,7 +36,6 @@ from app.schemas.coach import (
     PullRequest,
     PullStatus,
 )
-from app.schemas.mcp import McpSummary
 from app.services import coach, crypto, llm, ollama
 from app.services.llm import LLMError
 from app.services.mcp import build_summary
@@ -210,15 +210,22 @@ async def put_prompts(
     return await get_prompts(db, user)
 
 
-@router.get("/metrics", response_model=McpSummary)
+@router.get("/metrics", response_model=CoachMetricsResponse)
 async def coach_metrics(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
     layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
-) -> McpSummary:
-    """The exact stats the coach uses (transparency), for display in the UI."""
+) -> CoachMetricsResponse:
+    """The exact stats the coach uses (transparency), for display in the UI —
+    now including the n-gram view (weak bigrams + trigram rollup, design §6)."""
     _require_layout(layout_id)
-    return await build_summary(db, user, layout_id)
+    summary = await build_summary(db, user, layout_id)
+    block = await coach.ngram_summary(db, user.id, layout_id)
+    return CoachMetricsResponse(
+        **summary.model_dump(),
+        weak_bigrams=block.get("weak_bigrams", []),
+        trigram_rollup=block.get("trigram_rollup"),
+    )
 
 
 @router.post("/analyze", response_model=CoachAnalysis)
@@ -249,8 +256,9 @@ async def drill(
 ) -> CoachDrill:
     _require_layout(layout_id)
     focus_keys = payload.focus_keys if payload else None
+    focus_bigrams = payload.focus_bigrams if payload else None
     lesson, weak_keys, source, model = await coach.drill(
-        db, user, layout_id, focus_keys=focus_keys
+        db, user, layout_id, focus_keys=focus_keys, focus_bigrams=focus_bigrams
     )
     return CoachDrill(
         layout_id=layout_id,

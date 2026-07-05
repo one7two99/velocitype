@@ -17,6 +17,7 @@ from app.models.key_stat import KeyStat
 from app.models.keystroke import Keystroke
 from app.models.session import TypingSession
 from app.schemas.keystroke import KeystrokeIn
+from app.services import ngram_stats
 
 
 async def _user_session_seq(db: AsyncSession, user_id: uuid.UUID) -> int:
@@ -121,6 +122,9 @@ async def apply_keystrokes(
             stat.errors += data["errors"]
             stat.last_session_seq = seq
         touched += 1
+
+    # Roll the same batch into bigram stats in this transaction (§4).
+    await ngram_stats.apply_bigrams(db, session, keystrokes, seq)
 
     await db.commit()
     return len(keystrokes), touched

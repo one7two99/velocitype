@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.engine import adaptive
+from app.engine import ngrams as ngram_engine
 from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.models.key_stat import KeyStat
 from app.models.session import TypingSession
@@ -18,11 +19,14 @@ from app.models.user import User
 from app.schemas.stats import (
     KeyHeatCell,
     KeyHeatmap,
+    NgramRow,
+    NgramTable,
     ProgressSeries,
     StatsOverview,
     TopError,
     TrendPoint,
 )
+from app.services.ngram_stats import build_ngram_metrics
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -169,6 +173,43 @@ async def key_heatmap(
             )
         )
     return KeyHeatmap(layout_id=layout_id, keys=cells)
+
+
+@router.get("/ngrams", response_model=NgramTable)
+async def ngram_table(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+) -> NgramTable:
+    """Per-bigram table (class + rhythm consistency) for the Analysis page."""
+    layout = get_layout(layout_id)
+    metrics = await build_ngram_metrics(db, user.id, layout_id)
+    rows: list[NgramRow] = []
+    for m in metrics:
+        cls = (
+            ngram_engine.classify_bigram(m.ngram[0], m.ngram[1], layout)
+            if layout is not None and len(m.ngram) >= 2
+            else None
+        )
+        cons = ngram_engine.consistency(m.avg_latency_ms, m.latency_n, m.latency_sq_sum)
+        wpm = (12000 / m.avg_latency_ms) if m.avg_latency_ms else None
+        er = (m.errors / m.attempts) if m.attempts else 0.0
+        hitch = (m.hitch_n / m.latency_n) if m.latency_n else None
+        rows.append(
+            NgramRow(
+                ngram=m.ngram,
+                cls=cls.value if cls else None,
+                attempts=m.attempts,
+                errors=m.errors,
+                error_rate=round(er, 4),
+                avg_latency_ms=m.avg_latency_ms,
+                wpm=round(wpm, 1) if wpm else None,
+                consistency=round(cons, 4) if cons is not None else None,
+                hitch_rate=round(hitch, 4) if hitch is not None else None,
+                latency_n=m.latency_n,
+            )
+        )
+    return NgramTable(layout_id=layout_id, ngrams=rows)
 
 
 @router.get("/progress", response_model=ProgressSeries)

@@ -18,6 +18,7 @@ from sqlalchemy import select
 from app.config import get_settings
 from app.engine import adaptive
 from app.engine.layouts import get_layout
+from app.engine.ngrams import weakest_bigrams
 from app.models.ai_config import UserAiConfig
 from app.models.prompt import UserPrompt
 from app.models.user import User
@@ -25,6 +26,7 @@ from app.schemas.session import WeakKeyInfo
 from app.services import crypto, llm
 from app.services.key_stats import build_key_metrics
 from app.services.mcp import build_summary
+from app.services.ngram_stats import build_ngram_metrics, build_trigram_rollup
 
 _settings = get_settings()
 
@@ -39,9 +41,13 @@ ANALYZE_USER = (
     "Trainee data (JSON):\n{{data}}\n\n"
     "Write a short coaching analysis (max ~160 words) in plain prose:\n"
     "1) their current level in one sentence,\n"
-    "2) the 2-3 weakest keys and *why* they might lag (finger/hand),\n"
+    "2) the 2-3 weakest keys and weak bigrams — call out same-finger bigrams "
+    "(class SFB), choppy rhythm (low consistency / high hitch), and awkward "
+    "redirects — and *why* they might lag (finger/hand),\n"
     "3) one concrete practice recommendation for the next few sessions.\n"
-    "Address the user directly. No headings, no bullet symbols, no markdown."
+    "Use the weak_bigrams and trigram_rollup fields where relevant. Never invent "
+    "numbers; use only the data provided. Address the user directly. No headings, "
+    "no bullet symbols, no markdown."
 )
 DRILL_SYSTEM = (
     "You generate touch-typing drill text. You output ONLY the drill words, "
@@ -106,12 +112,52 @@ def _inject(template: str, placeholder: str, value: str) -> str:
     return f"{template}\n\n{value}"
 
 
+async def ngram_summary(db: AsyncSession, user_id, layout_id: str) -> dict:
+    """Compact bigram/trigram view (weak_bigrams + trigram_rollup) for the LLM
+    analysis payload and the coach metrics endpoint (design §6). {} if the layout
+    is unknown."""
+    layout = get_layout(layout_id)
+    if layout is None:
+        return {}
+    nmetrics = await build_ngram_metrics(db, user_id, layout_id)
+    mmap = {m.ngram: m for m in nmetrics}
+    weak: list[dict] = []
+    for s in weakest_bigrams(nmetrics, layout, n=5):
+        m = mmap.get(s.ngram)
+        entry: dict = {
+            "bigram": s.ngram,
+            "class": s.cls.value if s.cls else None,
+            "err_pct": round(s.error_rate * 100),
+        }
+        if m and m.avg_latency_ms:
+            entry["wpm"] = round(12000 / m.avg_latency_ms)
+        if s.consistency is not None:
+            entry["consistency"] = round(s.consistency, 2)
+        if m and m.latency_n:
+            entry["hitch_pct"] = round(100 * m.hitch_n / m.latency_n)
+        weak.append(entry)
+
+    roll = await build_trigram_rollup(db, user_id, layout_id)
+    bc = roll["by_class"]
+    return {
+        "weak_bigrams": weak,
+        "trigram_rollup": {
+            "redirect_pct": bc["REDIRECT"]["pct"],
+            "sfb_chain_pct": bc["SFB_CHAIN"]["pct"],
+            "worst_redirect": roll["worst_redirect"],
+            "worst_sfb_chain": roll["worst_sfb_chain"],
+        },
+    }
+
+
 async def analyze(db: AsyncSession, user: User, layout_id: str) -> tuple[str, str]:
     """Return (analysis text, model used) for the user's active provider."""
     cfg = await get_ai_config(db, user.id)
     prompts = await get_effective_prompts(db, user.id)
     summary = await build_summary(db, user, layout_id)
-    data = json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)
+    data_obj = summary.model_dump(mode="json")
+    data_obj.update(await ngram_summary(db, user.id, layout_id))
+    data = json.dumps(data_obj, ensure_ascii=False)
     user_prompt = _inject(prompts["analysis_user"], "{{data}}", data)
     text = await llm.generate(
         cfg, user_prompt, system=prompts["analysis_system"], max_tokens=280
@@ -209,40 +255,96 @@ def _annotate_focus(chars: list[str], metrics) -> str:
     return ", ".join(parts)
 
 
+def _valid_bigrams(focus_bigrams: list[str], layout) -> list[str]:
+    typeable = {c for c in layout.characters if len(c) == 1}
+    return [
+        b for b in dict.fromkeys(focus_bigrams)
+        if len(b) == 2 and b[0] in typeable and b[1] in typeable
+    ][:6]
+
+
+def _bigram_weak_info(bigrams: list[str], nmetrics) -> list[WeakKeyInfo]:
+    """WeakKeyInfo for focus bigrams (``char`` holds the bigram string)."""
+    mmap = {m.ngram: m for m in nmetrics}
+    info: list[WeakKeyInfo] = []
+    for b in bigrams:
+        m = mmap.get(b)
+        er = (m.errors / m.attempts) if m and m.attempts else 0.0
+        info.append(
+            WeakKeyInfo(
+                char=b,
+                error_rate=round(er, 4),
+                avg_latency_ms=m.avg_latency_ms if m else None,
+            )
+        )
+    return info
+
+
+def _annotate_focus_bigrams(bigrams: list[str], nmetrics) -> str:
+    """Render focus bigrams with per-bigram severity so the LLM can prioritise."""
+    mmap = {m.ngram: m for m in nmetrics}
+    parts: list[str] = []
+    for b in bigrams:
+        m = mmap.get(b)
+        if m and m.attempts:
+            note = f"{round(100 * m.errors / m.attempts)}% errors"
+            if m.avg_latency_ms:
+                note += f", ~{round(12000 / m.avg_latency_ms)} wpm"
+            parts.append(f"{b} ({note})")
+        else:
+            parts.append(b)
+    return ", ".join(parts)
+
+
 async def drill(
-    db: AsyncSession, user: User, layout_id: str, focus_keys: list[str] | None = None
+    db: AsyncSession,
+    user: User,
+    layout_id: str,
+    focus_keys: list[str] | None = None,
+    focus_bigrams: list[str] | None = None,
 ) -> tuple[str, list[WeakKeyInfo], str, str]:
     """Generate a drill lesson via the LLM. Returns (lesson, weak_keys, source,
     model) where source is the provider name or 'fallback'.
 
-    ``focus_keys`` (from the per-key Analysis) overrides the automatic weakest-key
-    selection when it contains valid, typeable keys."""
+    Focus precedence: explicit ``focus_bigrams`` (letter pairs from the n-gram
+    analysis) > explicit ``focus_keys`` (per-key analysis) > the automatic
+    weakest-key selection."""
     layout = get_layout(layout_id)
     if layout is None:
         raise ValueError(f"unknown layout '{layout_id}'")
 
     cfg = await get_ai_config(db, user.id)
-
     metrics = await build_key_metrics(db, user.id, layout_id)
 
-    picked = _focus_from_keys(focus_keys, layout, metrics) if focus_keys else ([], [])
-    if picked[0]:
-        weak_chars, weak_info = picked
+    # `cover` = tokens the drill must over-represent (chars or bigram substrings);
+    # `fallback_chars` = single chars fed to the deterministic generator.
+    bigrams = _valid_bigrams(focus_bigrams, layout) if focus_bigrams else []
+    if bigrams:
+        nmetrics = await build_ngram_metrics(db, user.id, layout_id)
+        weak_info = _bigram_weak_info(bigrams, nmetrics)
+        focus = _annotate_focus_bigrams(bigrams, nmetrics)
+        cover = bigrams
+        fallback_chars = list(dict.fromkeys(c for b in bigrams for c in b))
     else:
-        scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
-        weak_scored = [s for s in scored if s.score > 0.0]
-        weak_chars = [s.character for s in weak_scored]
-        weak_info = _weak_info(metrics, weak_scored)
+        picked = _focus_from_keys(focus_keys, layout, metrics) if focus_keys else ([], [])
+        if picked[0]:
+            weak_chars, weak_info = picked
+        else:
+            scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
+            weak_scored = [s for s in scored if s.score > 0.0]
+            weak_chars = [s.character for s in weak_scored]
+            weak_info = _weak_info(metrics, weak_scored)
+        focus = _annotate_focus(weak_chars, metrics) if weak_chars else "a balanced mix of all keys"
+        cover = weak_chars
+        fallback_chars = weak_chars
 
     allowed_letters = {c for c in layout.characters if c.isalpha()}
-    focus = _annotate_focus(weak_chars, metrics) if weak_chars else "a balanced mix of all keys"
-
     prompts = await get_effective_prompts(db, user.id)
     prompt = _inject(prompts["drill_user"], "{{focus}}", focus)
 
     # Generate + verify: the drill must be typeable AND actually over-represent the
-    # focus keys. Retry once, else use the deterministic generator (which weights
-    # weak keys 3x and injects clusters for rare ones — coverage guaranteed).
+    # focus tokens (chars or bigram substrings). Retry once, else use the
+    # deterministic generator (weak keys 3x + clusters — coverage guaranteed).
     source = cfg.provider
     lesson: str | None = None
     for _ in range(2):
@@ -253,12 +355,12 @@ async def drill(
         except llm.LLMError:
             break
         candidate = _sanitize_lesson(raw, allowed_letters, min_words=40)
-        if candidate and _covers_focus(candidate, weak_chars):
+        if candidate and _covers_focus(candidate, cover):
             lesson = candidate
             break
 
     if lesson is None:
-        lesson = adaptive.generate_lesson(weak_chars, layout.characters)
+        lesson = adaptive.generate_lesson(fallback_chars, layout.characters)
         source = "fallback"
 
     return lesson, weak_info, source, cfg.model
