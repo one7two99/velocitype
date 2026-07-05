@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Velocitype — a local-first typing coach for split keyboards</title>
+<meta name="description" content="Velocitype is a self-hosted, adaptive touch-typing trainer built for Ferris Sweep and Corne. A local AI coach finds the keys and finger-fumbling letter pairs that slow you down and drills them away. No keystroke ever leaves your computer." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Velocitype — a local-first typing coach for split keyboards" />
+<meta property="og:description" content="Self-hosted adaptive typing trainer for Ferris Sweep & Corne. Local AI coach, zero cloud required, optional EU-only cloud. By split keyboard nerds, for split keyboard nerds." />
+<meta property="og:url" content="https://one7two99.github.io/velocitype/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="canonical" href="https://one7two99.github.io/velocitype/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141821'/%3E%3Crect x='6' y='9' width='9' height='9' rx='2' fill='%23E8B04B'/%3E%3Crect x='17' y='9' width='9' height='9' rx='2' fill='%234FD1C5'/%3E%3Crect x='11' y='20' width='10' height='3.5' rx='1.75' fill='%23E8E6DF'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#141821;          /* deep instrument slate, not pure black */
+    --ink-2:#1a1f2b;
+    --surface:#1d2330;      /* lifted panel */
+    --surface-2:#232a39;
+    --line:#2c3446;         /* hairline */
+    --legend:#E8E6DF;       /* keycap-legend off-white */
+    --muted:#8a93a6;        /* slate text */
+    --muted-2:#636d80;
+    --amber:#E8B04B;        /* amber-CRT readout accent */
+    --teal:#4FD1C5;         /* cool data accent */
+    --hot:#E5735B;          /* heatmap hot end (data only) */
+
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+
+    --wrap:1160px;
+    --pad:clamp(1.25rem,4vw,2.5rem);
+    --sec:clamp(4rem,10vw,7.5rem);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--ink);color:var(--legend);
+    font-family:var(--sans);font-size:clamp(1rem,0.97rem + 0.2vw,1.075rem);
+    line-height:1.62;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 78% -8%, rgba(232,176,75,.07), transparent 60%),
+      radial-gradient(700px 500px at 8% 4%, rgba(79,209,197,.06), transparent 55%);
+  }
+  a{color:inherit}
+  ::selection{background:var(--amber);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
+
+  .wrap{max-width:var(--wrap);margin:0 auto;padding-inline:var(--pad)}
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 1.1rem
+  }
+  h1,h2,h3{font-family:var(--mono);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0}
+  p{margin:0 0 1rem}
+  .lede{color:var(--muted);max-width:60ch}
+
+  /* ---------- top bar ---------- */
+  header.bar{position:sticky;top:0;z-index:50;background:rgba(20,24,33,.72);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;gap:1.5rem;height:64px}
+  .brand{display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-weight:800;
+    letter-spacing:-.02em;font-size:1.05rem;text-decoration:none}
+  .brand svg{display:block}
+  .bar nav{margin-left:auto;display:flex;gap:1.6rem;align-items:center}
+  .bar nav a{font-family:var(--mono);font-size:.82rem;color:var(--muted);text-decoration:none}
+  .bar nav a:hover{color:var(--legend)}
+  .bar .ghlink{color:var(--legend)}
+  @media (max-width:720px){.bar nav a.hide-sm{display:none}}
+
+  .btn{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--mono);font-weight:700;
+    font-size:.86rem;letter-spacing:.01em;text-decoration:none;padding:.7rem 1.1rem;border-radius:9px;
+    border:1px solid var(--line);transition:transform .12s ease,border-color .12s ease,background .12s ease}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+  .btn-primary:hover{background:#f2bd60}
+  .btn-ghost{color:var(--legend)}
+  .btn-ghost:hover{border-color:var(--muted)}
+
+  /* ---------- hero ---------- */
+  .hero{padding-top:clamp(2.5rem,6vw,4.5rem);padding-bottom:var(--sec)}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,4rem);align-items:center}
+  .hero h1{font-size:clamp(2.3rem,1.4rem + 3.6vw,4.1rem)}
+  .hero h1 .amber{color:var(--amber)}
+  .hero .lede{margin-top:1.4rem;font-size:1.12rem}
+  .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.9rem}
+  @media (max-width:860px){
+    .hero .grid{grid-template-columns:1fr;gap:2.5rem}
+    .hero .board-wrap{order:-1}
+  }
+
+  /* ---------- keyboard signature ---------- */
+  .board-wrap{background:linear-gradient(180deg,var(--surface),var(--ink-2));
+    border:1px solid var(--line);border-radius:18px;padding:clamp(1rem,2.5vw,1.6rem);
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
+  .board-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+    font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.08em}
+  .board-head .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);
+    display:inline-block;margin-right:.45rem;box-shadow:0 0 10px var(--teal)}
+  .readouts{display:flex;gap:1.1rem}
+  .readouts b{color:var(--legend);font-weight:700}
+  .board{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(1rem,3.5vw,2.2rem);justify-items:center}
+  .half{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .key{width:clamp(30px,4.4vw,42px);aspect-ratio:1/1;border-radius:8px;background:var(--surface-2);
+    border:1px solid #313a4d;display:grid;place-items:center;
+    font-family:var(--mono);font-size:.74rem;font-weight:500;color:var(--muted);
+    transition:background .5s ease,color .5s ease,box-shadow .5s ease,transform .12s ease}
+  .thumbs{grid-column:1 / -1;display:flex;gap:6px;justify-content:center;margin-top:2px}
+  .thumb{height:clamp(22px,3vw,28px);width:clamp(40px,7vw,64px);border-radius:8px;background:var(--surface-2);
+    border:1px solid #313a4d}
+  .board-foot{margin-top:1.15rem;border-top:1px solid var(--line);padding-top:.9rem}
+  .drill{font-family:var(--mono);font-size:.9rem;color:var(--legend);min-height:1.5em;letter-spacing:.02em}
+  .drill .caret{display:inline-block;width:.55ch;background:var(--amber);color:transparent;
+    animation:blink 1s steps(1) infinite;margin-left:1px}
+  .drill-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted-2);margin-bottom:.4rem}
+  @keyframes blink{50%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.drill .caret{animation:none}}
+
+  /* ---------- spec strip ---------- */
+  .specs{border-block:1px solid var(--line);background:var(--ink-2)}
+  .specs .wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+  .spec{padding:1.3rem var(--pad) 1.3rem 0;border-right:1px solid var(--line)}
+  .spec:last-child{border-right:0}
+  .spec .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+  .spec .v{font-family:var(--mono);font-weight:700;font-size:.92rem;color:var(--legend);margin-top:.35rem}
+  @media (max-width:860px){
+    .specs .wrap{grid-template-columns:repeat(2,1fr)}
+    .spec{border-right:0;border-bottom:1px solid var(--line);padding-right:0}
+    .spec:nth-child(odd){border-right:1px solid var(--line);padding-right:var(--pad)}
+    .spec:last-child{border-bottom:0}
+  }
+
+  section{padding-block:var(--sec)}
+  .sec-head{max-width:64ch;margin-bottom:clamp(2.2rem,5vw,3.4rem)}
+  .sec-head h2{font-size:clamp(1.7rem,1.2rem + 1.8vw,2.5rem)}
+  .sec-head p{margin-top:1rem;color:var(--muted)}
+
+  /* ---------- the loop ---------- */
+  .loop{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;counter-reset:step}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1.4rem 1.3rem;position:relative}
+  .step .n{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--amber);letter-spacing:.1em}
+  .step h3{font-size:1.05rem;margin:.7rem 0 .5rem;color:var(--legend)}
+  .step p{font-size:.95rem;color:var(--muted);margin:0}
+  .step.hl{border-color:#3a4763}
+  .step.hl h3{color:var(--teal)}
+  @media (max-width:860px){.loop{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.loop{grid-template-columns:1fr}}
+
+  /* ---------- pillars (USP) ---------- */
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+  .pillar{border:1px solid var(--line);border-radius:16px;padding:1.8rem 1.6rem;background:
+    linear-gradient(180deg,var(--surface),var(--ink-2))}
+  .pillar .ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:1.1rem;
+    border:1px solid var(--line);background:var(--ink)}
+  .pillar h3{font-size:1.12rem;color:var(--legend);margin-bottom:.6rem}
+  .pillar p{color:var(--muted);font-size:.98rem;margin:0}
+  @media (max-width:860px){.pillars{grid-template-columns:1fr}}
+
+  /* ---------- AI split ---------- */
+  .ai{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+  .card{border:1px solid var(--line);border-radius:16px;padding:1.9rem 1.7rem;background:var(--surface)}
+  .card .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    padding:.28rem .6rem;border-radius:999px;display:inline-block;margin-bottom:1rem}
+  .card.local .tag{color:var(--teal);border:1px solid rgba(79,209,197,.4)}
+  .card.cloud .tag{color:var(--amber);border:1px solid rgba(232,176,75,.4)}
+  .card h3{font-size:1.2rem;margin-bottom:.7rem}
+  .card p{color:var(--muted);font-size:.98rem}
+  .card ul{margin:.9rem 0 0;padding:0;list-style:none}
+  .card li{font-size:.92rem;color:var(--legend);padding:.42rem 0 .42rem 1.4rem;position:relative;border-top:1px solid var(--line)}
+  .card li:first-child{border-top:0}
+  .card li::before{content:"›";position:absolute;left:.2rem;color:var(--muted-2);font-family:var(--mono)}
+  @media (max-width:860px){.ai{grid-template-columns:1fr}}
+
+  /* ---------- feature grid ---------- */
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .feat{background:var(--ink-2);padding:1.6rem 1.5rem}
+  .feat h3{font-size:1rem;color:var(--legend);margin-bottom:.5rem;font-family:var(--mono);font-weight:700}
+  .feat p{font-size:.92rem;color:var(--muted);margin:0}
+  @media (max-width:860px){.feats{grid-template-columns:1fr 1fr}}
+  @media (max-width:520px){.feats{grid-template-columns:1fr}}
+
+  /* ---------- quickstart ---------- */
+  .qs{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(1.6rem,4vw,3rem);align-items:center}
+  .terminal{background:#0f131b;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 24px 50px -28px rgba(0,0,0,.8)}
+  .term-bar{display:flex;align-items:center;gap:.45rem;padding:.7rem .9rem;border-bottom:1px solid var(--line);
+    background:var(--ink-2)}
+  .term-bar i{width:11px;height:11px;border-radius:50%;display:block}
+  .term-bar .r{background:#e5735b55}.term-bar .y{background:#e8b04b55}.term-bar .g{background:#4fd1c555}
+  .term-bar span{margin-left:.5rem;font-family:var(--mono);font-size:.72rem;color:var(--muted-2)}
+  pre{margin:0;padding:1.3rem 1.4rem;overflow:auto;font-family:var(--mono);font-size:.85rem;line-height:1.75;color:var(--legend)}
+  pre .c{color:var(--muted-2)}
+  pre .p{color:var(--teal)}
+  pre .a{color:var(--amber)}
+  @media (max-width:860px){.qs{grid-template-columns:1fr}}
+
+  /* ---------- workbench / roadmap ---------- */
+  .bench{border:1px dashed var(--line);border-radius:16px;padding:1.7rem 1.6rem;background:var(--ink-2)}
+  .bench ul{margin:1rem 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1.6rem}
+  .bench li{font-family:var(--mono);font-size:.9rem;color:var(--muted);padding-left:1.5rem;position:relative}
+  .bench li::before{content:"[ ]";position:absolute;left:0;color:var(--amber)}
+  @media (max-width:600px){.bench ul{grid-template-columns:1fr}}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding-block:clamp(2.5rem,6vw,4rem)}
+  .foot{display:flex;flex-wrap:wrap;gap:1.4rem;justify-content:space-between;align-items:flex-start}
+  .foot .tagline{font-family:var(--mono);font-weight:700;letter-spacing:-.01em;max-width:34ch}
+  .foot .meta{font-size:.86rem;color:var(--muted)}
+  .foot a.fl{font-family:var(--mono);font-size:.84rem;color:var(--muted);text-decoration:none;display:block;margin:.3rem 0}
+  .foot a.fl:hover{color:var(--legend)}
+  .stack{font-family:var(--mono);font-size:.74rem;color:var(--muted-2);margin-top:1.4rem}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1d2330"/><rect x="6" y="9" width="9" height="9" rx="2" fill="#E8B04B"/><rect x="17" y="9" width="9" height="9" rx="2" fill="#4FD1C5"/><rect x="11" y="20" width="10" height="3.5" rx="1.75" fill="#E8E6DF"/></svg>
+      velocitype
+    </a>
+    <nav>
+      <a class="hide-sm" href="#loop">How it works</a>
+      <a class="hide-sm" href="#why">Why</a>
+      <a class="hide-sm" href="#ai">The coach</a>
+      <a href="#quickstart">Quickstart</a>
+      <a class="ghlink" href="https://github.com/one7two99/velocitype">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <p class="eyebrow">Self-hosted · Local-first · Split-native</p>
+        <h1>Master your split&nbsp;keyboard. <span class="amber">Locally.</span></h1>
+        <p class="lede">Velocitype is a self-hosted, adaptive touch-typing trainer built for the Ferris Sweep and Corne. An AI coach runs inside your own Docker stack, finds the keys and finger-fumbling letter pairs that slow you down, and drills them away — and not a single keystroke ever leaves your machine.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#quickstart">Read the quickstart</a>
+          <a class="btn btn-ghost" href="https://github.com/one7two99/velocitype">View on GitHub</a>
+        </div>
+      </div>
+
+      <div class="board-wrap" aria-hidden="true">
+        <div class="board-head">
+          <span><span class="dot"></span>coach · live</span>
+          <span class="readouts"><span>wpm <b id="ro-wpm">58</b></span><span>rhythm <b id="ro-con">0.86</b></span></span>
+        </div>
+        <div class="board" id="board">
+          <div class="half" id="halfL"></div>
+          <div class="half" id="halfR"></div>
+        </div>
+        <div class="board-foot">
+          <div class="drill-label">generated drill · focus on your weak keys</div>
+          <div class="drill"><span id="drill-text"></span><span class="caret">·</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="specs">
+  <div class="wrap">
+    <div class="spec"><div class="k">Boards</div><div class="v">Ferris Sweep · Corne</div></div>
+    <div class="spec"><div class="k">Layouts</div><div class="v">Colemak-DH · QWERTY</div></div>
+    <div class="spec"><div class="k">Coach</div><div class="v">Ollama · Mistral (EU)</div></div>
+    <div class="spec"><div class="k">Deploy</div><div class="v">docker compose up</div></div>
+    <div class="spec"><div class="k">Telemetry</div><div class="v">None. Ever.</div></div>
+  </div>
+</div>
+
+<section id="loop">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">The loop</p>
+      <h2>Type, measure, coach, drill.</h2>
+      <p>Every number you see is computed on your machine, in code. The AI never scores you — it reads the numbers and turns them into plain-language advice and a drill aimed at your weakest keys.</p>
+    </div>
+    <div class="loop">
+      <div class="step reveal"><div class="n">01 / TYPE</div><h3>Practice</h3><p>Start with a handful of keys; each new one unlocks as you reach a share of your target speed. Monkeytype-style timed sessions whenever you want them.</p></div>
+      <div class="step reveal"><div class="n">02 / MEASURE</div><h3>Measured in code</h3><p>Speed, accuracy, per-key latency, same-finger bigrams and rhythm consistency — all computed locally and deterministically, never by the model.</p></div>
+      <div class="step reveal hl"><div class="n">03 / COACH</div><h3>Local AI read-out</h3><p>A local LLM reads the numbers and names the keys, letter pairs and rhythm hitches that hold you back — which finger, which hand — in a few honest sentences.</p></div>
+      <div class="step reveal"><div class="n">04 / DRILL</div><h3>Targeted words</h3><p>It writes a fresh word list built around exactly your weak keys or letter pairs, verified to actually contain them. Then you go again.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="why" style="background:var(--ink-2);border-block:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">Why Velocitype</p>
+      <h2>Built for split keyboards, not adapted to them.</h2>
+      <p>Most trainers treat a keyboard as one flat QWERTY slab. Velocitype knows your board has two halves, that your layout is Colemak-DH, and that the fix for a slow key depends on the finger that owns it.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4FD1C5" stroke-width="2"><rect x="2" y="6" width="9" height="12" rx="2"/><rect x="13" y="6" width="9" height="12" rx="2"/></svg></div>
+        <h3>Split-native by design</h3>
+        <p>Real finger and hand maps for Colemak-DH and QWERTY on both the Ferris Sweep and the Corne — so it spots the same-finger bigrams and awkward rolls that generic trainers can't even see. The heatmap is shaped like your actual board, not a row-stagger slab.</p>
+      </div>
+      <div class="pillar reveal">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8B04B" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/></svg></div>
+        <h3>Local by default, private by design</h3>
+        <p>The coach is an Ollama model in your own stack. Pull and switch models straight from the web UI. There is no account with us, no telemetry, no phone-home — because there is no “us” in the loop at all.</p>
+      </div>
+      <div class="pillar reveal">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4FD1C5" stroke-width="2"><path d="M4 15a4 4 0 0 1 1-7.5A5.5 5.5 0 0 1 16 6a4.5 4.5 0 0 1 3 8"/><path d="M12 12v8m0 0-3-3m3 3 3-3"/></svg></div>
+        <h3>Cloud only if you choose it — and only EU</h3>
+        <p>Want a stronger coach without running a big local model? Optional Mistral support is built in — chosen deliberately as a European provider under EU data protection, rather than a US or Chinese frontier lab.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ai">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">The coach</p>
+      <h2>Two ways to run the AI. Both are yours to control.</h2>
+      <p>The provider, the model, and even the coaching prompts are per-user settings. Start fully offline; reach for the cloud only if and when you want to.</p>
+    </div>
+    <div class="ai">
+      <div class="card local reveal">
+        <span class="tag">Default · fully offline</span>
+        <h3>Local — Ollama</h3>
+        <p>A local model runs in the Ollama container beside the app. Nothing leaves your computer.</p>
+        <ul>
+          <li>Ships ready for a small, fast model that runs on modest hardware</li>
+          <li>Browse, download and switch models from the web UI — no shell needed</li>
+          <li>Works completely air-gapped once the model is pulled</li>
+          <li>Reasoning traces stripped automatically for clean coaching output</li>
+        </ul>
+      </div>
+      <div class="card cloud reveal">
+        <span class="tag">Optional · EU cloud</span>
+        <h3>Cloud — Mistral</h3>
+        <p>Prefer a larger model? Add a Mistral key per user and switch provider in settings.</p>
+        <ul>
+          <li>European provider, chosen for EU data-protection standards</li>
+          <li>A deliberate stance: no US or Chinese frontier LLMs</li>
+          <li>Your API key is encrypted at rest and never shown again</li>
+          <li>Off unless you turn it on — local stays the default</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--ink-2);border-block:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">What's inside</p>
+      <h2>An adaptive engine, not a word bank.</h2>
+    </div>
+    <div class="feats">
+      <div class="feat reveal"><h3>Progressive unlocking</h3><p>keybr-style: you start on a few keys and unlock the next once every active key holds its share of your target speed. Threshold and window are yours to tune.</p></div>
+      <div class="feat reveal"><h3>Bigram &amp; rhythm analysis</h3><p>Same-finger bigrams, inward/outward rolls, redirects, inter-key rhythm consistency and hesitation hitches — measured per letter pair, with SFBs flagged.</p></div>
+      <div class="feat reveal"><h3>Board-shaped heatmap</h3><p>A Ferris/Corne heatmap that colours each key by how much it's holding you back — cool for solid, hot for weak — with locked keys shown until you unlock them.</p></div>
+      <div class="feat reveal"><h3>Targeted drills</h3><p>Tick weak keys or bigrams in the Analysis tables and generate a coach drill aimed at exactly those — coverage-verified, with a deterministic fallback.</p></div>
+      <div class="feat reveal"><h3>Editable coach prompts</h3><p>Don't like the coaching voice? The analysis and drill prompts are yours to rewrite, per user, right in the settings.</p></div>
+      <div class="feat reveal"><h3>Your data, on your terms</h3><p>Sessions and stats live in your own Postgres and sync across your browsers. One password-confirmed click really deletes all of it — rows gone, not flagged.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <div class="qs">
+      <div class="sec-head reveal" style="margin-bottom:0">
+        <p class="eyebrow">Quickstart</p>
+        <h2>Running in a few minutes.</h2>
+        <p>Clone it, copy the example environment file, and bring the stack up. Then open the app, create a local account, and pull a coaching model from the AI settings — all from the browser.</p>
+      </div>
+      <div class="terminal reveal">
+        <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>bash — velocitype</span></div>
+<pre><span class="c"># grab the source</span>
+git clone https://github.com/<span class="a">one7two99</span>/velocitype.git
+cd velocitype
+
+<span class="c"># configure, then generate the JWT keypair</span>
+cp .env.example .env
+./secrets/keygen.sh
+
+<span class="c"># bring up the whole stack</span>
+docker compose up <span class="p">--build</span>
+
+<span class="c"># open the app, register, then pull a</span>
+<span class="c"># coaching model in Settings → AI</span>
+open http://localhost:8080/</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="bench reveal">
+      <p class="eyebrow" style="margin-bottom:.6rem">On the workbench</p>
+      <p style="color:var(--muted);margin:0;max-width:60ch">Everything above ships today — including full bigram, same-finger-bigram and rhythm analysis. These are the next ideas in the queue, not yet built.</p>
+      <ul>
+        <li>More boards (Lily58, Kyria)</li>
+        <li>More layouts (Workman, Graphite)</li>
+        <li>Trigram-targeted drills</li>
+        <li>Additional EU coach providers</li>
+        <li>Import / export of progress</li>
+        <li>Shareable progress cards</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <p class="tagline">By split keyboard nerds,<br>for split keyboard nerds.</p>
+      <p class="stack">FastAPI · React · PostgreSQL · Redis · Caddy · Ollama · Docker</p>
+    </div>
+    <div class="meta">
+      <a class="fl" href="https://github.com/one7two99/velocitype">Source on GitHub ↗</a>
+      <a class="fl" href="https://github.com/one7two99/velocitype#readme">Documentation</a>
+      <a class="fl" href="https://github.com/one7two99/velocitype/issues">Report an issue</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Ferris/Corne-style 3x5 halves with Colemak-DH legends.
+  var L = [["q","w","f","p","b"],["a","r","s","t","g"],["z","x","c","d","v"]];
+  var R = [["j","l","u","y",";"],["m","n","e","i","o"],["k","h",",",".","/"]];
+  // "weakness" 0..1 per char — drives the heat ramp (demo values).
+  var weak = {b:.9,g:.55,x:.7,z:.5,v:.6,q:.45,p:.3,y:.65,";":.5,"/":.6,k:.4,",":.35,j:.55,u:.3,f:.25};
+  function heat(v){
+    // cool slate -> teal -> amber -> hot coral
+    if(v==null) v=0;
+    var stops=[[45,55,73],[79,209,197],[232,176,75],[229,115,91]];
+    var t=Math.max(0,Math.min(1,v))*3, i=Math.floor(t), f=t-i;
+    if(i>=3){i=2;f=1;}
+    var a=stops[i], b=stops[i+1];
+    var c=a.map(function(x,k){return Math.round(x+(b[k]-x)*f);});
+    return "rgb("+c[0]+","+c[1]+","+c[2]+")";
+  }
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  function build(el, rows){
+    rows.forEach(function(row){ row.forEach(function(ch){
+      var d=document.createElement("div"); d.className="key"; d.textContent=ch; d.dataset.ch=ch;
+      el.appendChild(d);
+    });});
+    var t=document.createElement("div"); t.className="thumbs";
+    for(var i=0;i<2;i++){var k=document.createElement("div");k.className="thumb";t.appendChild(k);} 
+    el.appendChild(t);
+  }
+  var halfL=document.getElementById("halfL"), halfR=document.getElementById("halfR");
+  if(halfL&&halfR){ build(halfL,L); build(halfR,R); }
+  var keys={}; document.querySelectorAll(".key").forEach(function(k){keys[k.dataset.ch]=k;});
+
+  function paint(ch){ var k=keys[ch]; if(!k)return; var v=weak[ch];
+    if(v!=null){k.style.background=heat(v); k.style.color = v>.5 ? "#141821" : "#E8E6DF";
+      k.style.boxShadow="0 0 16px -4px "+heat(v);} }
+
+  if(reduce){
+    Object.keys(weak).forEach(paint);
+    var dt=document.getElementById("drill-text"); if(dt) dt.textContent="brag verb gbox zveb bygg vabt";
+    return;
+  }
+
+  // staggered illumination sweep on load
+  var order=Object.keys(weak).sort(function(a,b){return weak[b]-weak[a];});
+  order.forEach(function(ch,i){ setTimeout(function(){paint(ch);}, 300+i*90); });
+
+  // type out a drill line, pulsing the corresponding key
+  var line="brag verb gbox zveb bygg vabt yoke jolly";
+  var span=document.getElementById("drill-text"), idx=0;
+  function type(){
+    if(!span) return;
+    if(idx<=line.length){
+      span.textContent=line.slice(0,idx);
+      var ch=line[idx-1];
+      if(ch && keys[ch]){ var k=keys[ch]; k.style.transform="translateY(-3px)";
+        setTimeout(function(){k.style.transform="";},120); }
+      idx++;
+      setTimeout(type, ch===" " ? 220 : 95 + Math.random()*70);
+    } else {
+      setTimeout(function(){ idx=0; span.textContent=""; setTimeout(type,500); }, 2600);
+    }
+  }
+  setTimeout(type, 300+order.length*90+400);
+
+  // gentle live readouts
+  var wpm=document.getElementById("ro-wpm"), con=document.getElementById("ro-con");
+  setInterval(function(){
+    if(wpm) wpm.textContent = 54 + Math.floor(Math.random()*9);
+    if(con) con.textContent = (0.82 + Math.random()*0.09).toFixed(2);
+  }, 1600);
+
+  // reveal on scroll
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){e.target.classList.add("in"); io.unobserve(e.target);}
+  });},{threshold:.14});
+  document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>
