@@ -129,7 +129,13 @@ export function DashboardPage() {
               {history.data.items.map((s) => (
                 <tr key={s.id}>
                   <td>{new Date(s.started_at).toLocaleString()}</td>
-                  <td>{s.mode}</td>
+                  <td>
+                    {s.mode === "coach_drill" ? (
+                      <span className="tf-tag tf-tag--ai">AI Drill</span>
+                    ) : (
+                      s.mode
+                    )}
+                  </td>
                   <td className="mono">{fmtNum(s.wpm_net)}</td>
                   <td className="mono">{fmtPct(s.accuracy)}</td>
                   <td className="mono">{fmtPct(s.consistency)}</td>
