@@ -20,6 +20,19 @@
   font-weight: 600;
 }
 .tf-drill-banner-btn:hover { text-decoration: underline; }
+.tf-drill-source {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.tf-drill-source.is-fallback {
+  background: color-mix(in srgb, #e5a04b 22%, transparent);
+  color: #e5a04b;
+}
 
 .tf-loading {
   display: flex;

@@ -178,12 +178,22 @@ def _weak_info(metrics, scored) -> list[WeakKeyInfo]:
     ]
 
 
-def _covers_focus(lesson: str, focus_chars: list[str], min_per_key: int = 2) -> bool:
-    """Verify the drill actually over-represents the focus keys: each of the top
-    focus keys must appear at least ``min_per_key`` times. Empty focus ⇒ ok."""
-    top = focus_chars[:3]
-    if not top:
+def _covers_focus(lesson: str, focus_tokens: list[str], min_per_key: int = 2) -> bool:
+    """Verify the drill actually exercises the focus tokens. Empty focus ⇒ ok.
+
+    Single keys: each of the top few must appear at least ``min_per_key`` times.
+    Bigrams (letter pairs) are much harder to weave into real words under a
+    restricted alphabet (progressive unlocking), so requiring each pair twice is
+    often impossible and forces the deterministic fallback. Instead require that
+    at least half of the focus bigrams appear and that they occur a few times in
+    total — a genuine drill without demanding the impossible."""
+    if not focus_tokens:
         return True
+    if all(len(t) == 2 for t in focus_tokens):
+        occurrences = sum(lesson.count(t) for t in focus_tokens)
+        present = sum(1 for t in focus_tokens if t in lesson)
+        return present >= max(1, (len(focus_tokens) + 1) // 2) and occurrences >= 3
+    top = focus_tokens[:3]
     return all(lesson.count(k) >= min_per_key for k in top)
 
 
@@ -351,16 +361,23 @@ async def drill(
     prompt = _inject(prompts["drill_user"], "{{focus}}", focus)
     # Hard constraint so the model never emits a not-yet-unlocked key.
     prompt += f"\n\nUse ONLY these letters (plus spaces): {' '.join(unlocked_chars)}."
+    # For bigram focus, steer the model toward real words containing those pairs
+    # (the generic "over-represent" wording targets single keys otherwise).
+    if bigrams:
+        prompt += (
+            "\n\nMany of the words should be real words that contain these letter "
+            "pairs: " + ", ".join(bigrams) + "."
+        )
 
-    # Generate + verify: the drill must be typeable AND actually over-represent the
-    # focus tokens (chars or bigram substrings). Retry once, else use the
-    # deterministic generator (weak keys 3x + clusters — coverage guaranteed).
+    # Generate + verify: the drill must be typeable AND actually exercise the
+    # focus tokens (chars or bigram substrings). Retry a couple of times, else use
+    # the deterministic generator (focus 3x + clusters — coverage guaranteed).
     source = cfg.provider
     lesson: str | None = None
-    for _ in range(2):
+    for _ in range(3):
         try:
             raw = await llm.generate(
-                cfg, prompt, system=prompts["drill_system"], max_tokens=160
+                cfg, prompt, system=prompts["drill_system"], max_tokens=220
             )
         except llm.LLMError:
             break
