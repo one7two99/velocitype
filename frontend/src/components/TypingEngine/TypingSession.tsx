@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useTypingEngine, type EngineResult } from "../../hooks/useTypingEngine";
+import { PaceIndicator } from "./PaceIndicator";
 import { TypingText } from "./TypingText";
 import "./typing-session.css";
 
@@ -46,6 +47,8 @@ export function TypingSession({
         </span>
         <span className="tf-metrics-hint">Tab + Enter = restart</span>
       </div>
+
+      <PaceIndicator avg={view.liveAvgWpm} now={view.liveWpm} />
 
       <div className="tf-typing-wrap" onClick={() => window.focus()}>
         <TypingText view={view} />
