@@ -81,6 +81,37 @@ async def test_full_session_flow_persists_metrics(client, unique_user):
     assert hist.json()["total"] >= 1
 
 
+async def test_coach_drill_mode_session(client, unique_user):
+    await _register(client, unique_user)
+    # coach_drill requires custom_text (like custom).
+    missing = await client.post(
+        "/api/sessions/start",
+        json={"layout_id": DEFAULT_LAYOUT_ID, "mode": "coach_drill"},
+    )
+    assert missing.status_code == 422
+
+    start = await client.post(
+        "/api/sessions/start",
+        json={
+            "layout_id": DEFAULT_LAYOUT_ID,
+            "mode": "coach_drill",
+            "custom_text": "the and for with that",
+        },
+    )
+    assert start.status_code == 201
+    assert start.json()["mode"] == "coach_drill"
+    assert start.json()["lesson"] == "the and for with that"
+
+    # The mode is persisted and surfaced in history for the dashboard tag.
+    sid = start.json()["session_id"]
+    await client.post(
+        f"/api/sessions/{sid}/complete",
+        json={"wpm_raw": 40, "wpm_net": 38, "accuracy": 1.0, "consistency": 0.9},
+    )
+    hist = await client.get("/api/sessions?page=1&page_size=5")
+    assert hist.json()["items"][0]["mode"] == "coach_drill"
+
+
 async def test_complete_validation_error(client, unique_user):
     await _register(client, unique_user)
     start = await client.post(

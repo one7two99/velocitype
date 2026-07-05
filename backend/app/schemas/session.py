@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.schemas.keystroke import KeystrokeIn
 
-SessionMode = Literal["adaptive", "fixed_text", "custom"]
+SessionMode = Literal["adaptive", "fixed_text", "custom", "coach_drill"]
 
 
 class SessionStartRequest(BaseModel):
@@ -21,8 +21,8 @@ class SessionStartRequest(BaseModel):
 
     @model_validator(mode="after")
     def _custom_requires_text(self) -> "SessionStartRequest":
-        if self.mode == "custom" and not self.custom_text:
-            raise ValueError("custom mode requires custom_text")
+        if self.mode in ("custom", "coach_drill") and not self.custom_text:
+            raise ValueError(f"{self.mode} mode requires custom_text")
         return self
 
 
