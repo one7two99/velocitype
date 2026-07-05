@@ -7,10 +7,17 @@
 > machine. Your keyboard, your data, your speed.
 
 Self-hosted, adaptive touch-typing trainer for split-keyboard enthusiasts —
-combining keybr-style adaptive key learning with monkeytype-style session UX,
-built for the Ferris Sweep and Corne (Colemak-DH) from day one. Every session is
-analysed by a **local** LLM (Ollama) that turns your weak keys into targeted
-drills — nothing is ever sent to an external API.
+combining keybr-style **progressive key unlocking** with monkeytype-style session
+UX, built for the **Ferris Sweep** and **Corne** (Colemak-DH and QWERTY) from day
+one. Every session is analysed **locally**: per-key weaknesses, same-finger
+bigrams, rolls and rhythm consistency are computed in code, then a **local** LLM
+(Ollama) turns them into plain-language coaching and targeted drills — nothing is
+ever sent to an external API unless you explicitly opt in.
+
+- **Website:** <https://one7two99.github.io/velocitype/>
+- **Repository:** <https://github.com/one7two99/velocitype>
+
+---
 
 - **Backend:** FastAPI (Python 3.12), async SQLAlchemy + asyncpg, PostgreSQL 16, Redis 7
 - **Frontend:** React 18 + TypeScript + Vite, Zustand, TanStack Query, recharts
@@ -20,11 +27,37 @@ drills — nothing is ever sent to an external API.
   user can optionally switch to **Mistral** (EU cloud) in Settings and enter their
   own API key (stored encrypted). Ollama models can be downloaded from Settings.
 
+## Features
+
+- **Progressive key unlocking (keybr-style).** Start on a small set of keys; the
+  next unlocks once every active key holds a configurable share of your target
+  speed over a configurable window. Toggle it, tune the threshold/window, or reset
+  progression in Preferences. Lessons and AI drills only ever use unlocked keys.
+- **Per-key analysis.** A sortable, searchable breakdown — hand, finger, attempts,
+  errors, latency and a weakness score — with the keys "needing work" pre-flagged.
+- **Bigram, SFB & rhythm analysis.** Bigram stats classify same-finger bigrams
+  (SFB), inward/outward rolls and alternation, plus inter-key **rhythm
+  consistency** and a **hitch** (hesitation) counter; trigram rolls/redirects are
+  derived on read. Same-finger bigrams are highlighted throughout.
+- **Targeted drills.** Tick weak keys *or* bigrams in the Analysis tables and
+  generate a coach drill aimed at exactly those, with coverage verification and a
+  deterministic fallback if the model is unavailable.
+- **Board-shaped heatmap.** A Ferris/Corne heatmap coloured by how much each key
+  holds you back, with locked keys shown until you unlock them.
+- **Local or EU-cloud coach.** Ollama by default; optional per-user Mistral (EU).
+  Provider, model and even the coaching prompts are per-user settings.
+- **Your data, on your terms.** Sessions and stats live in your own Postgres and
+  **sync across your browsers**; **Delete all data** (password-confirmed) really
+  removes every row — sessions, keystrokes, per-key and bigram stats, provider
+  config (including any stored Mistral key) and prompt overrides.
+
 ## Quick start
 
 Requires Docker (Compose v2) and OpenSSL.
 
 ```bash
+git clone https://github.com/one7two99/velocitype.git
+cd velocitype
 cp .env.example .env
 ./secrets/keygen.sh          # generates the RS256 JWT keypair into secrets/
 docker compose up --build
@@ -40,8 +73,8 @@ user; the first registration logs you in). The API docs are at
 > deployment.
 
 On startup the API waits for the database, runs Alembic migrations, and seeds the
-keyboard layouts (Ferris Sweep Colemak-DH + QWERTY). The `frontend` service builds
-the SPA into `frontend/dist`, which Caddy serves.
+keyboard layouts (Ferris Sweep Colemak-DH + QWERTY, Corne Colemak-DH + QWERTY).
+The `frontend` service builds the SPA into `frontend/dist`, which Caddy serves.
 
 ## Architecture
 
@@ -64,8 +97,8 @@ them on `localhost:5432` / `localhost:6379`):
 ```bash
 cd backend
 pip install -r requirements.txt
-TEST_DATABASE_URL=postgresql+asyncpg://velocitype_app:dev_app_change_me@localhost:5432/velocitype \
-REDIS_URL=redis://:dev_redis_change_me@localhost:6379/15 \
+TEST_DATABASE_URL=postgresql+asyncpg://velocitype_app:REDACTED@localhost:5432/velocitype \
+REDIS_URL=redis://:REDACTED@localhost:6379/15 \
 pytest
 ```
 
@@ -82,14 +115,22 @@ npm run dev            # http://localhost:5173
 npm run build          # type-check (tsc) + production bundle into dist/
 ```
 
-## AI Coach (local Ollama)
+## AI Coach (local Ollama, optional Mistral EU)
 
-The **Coach** page generates a coaching analysis and targeted practice drills from
-your stats using a **local** [Ollama](https://ollama.com) model — nothing is sent
-to any external LLM API.
+The **AI-Coach** page generates a coaching analysis and targeted practice drills
+from your stats. By default this uses a **local** [Ollama](https://ollama.com)
+model — nothing is sent to any external LLM API. Each user can instead switch to
+**Mistral** (a European provider, chosen for EU data protection over US/Chinese
+frontier labs) in Settings and supply their own API key, which is stored
+encrypted. Local stays the default.
 
 - A bundled `ollama` service runs the model; a one-shot `ollama-pull` fetches
   `OLLAMA_MODEL` (default `qwen3.5:4b`, ~3.4 GB) into a volume on first `up`.
+  Additional models can be browsed and downloaded from **Settings → AI** — no
+  shell required.
+- The coach is grounded in the metrics computed in code: it calls out weak keys,
+  weak **same-finger bigrams**, rhythm **hitches** and awkward **redirects**
+  without inventing numbers, and drills can target specific keys or letter pairs.
 - The app stays fully usable while the model downloads; coaching shows a
   "downloading" state, and drill generation falls back to the deterministic
   adaptive generator if the model is unavailable.
@@ -101,7 +142,10 @@ to any external LLM API.
   `0.0.0.0`, i.e. `OLLAMA_HOST=0.0.0.0 ollama serve`).
 
 Endpoints (session-authenticated): `GET /api/coach/status`,
-`POST /api/coach/analyze`, `POST /api/coach/drill`.
+`POST /api/coach/analyze`, `POST /api/coach/drill` (accepts optional `focus_keys`
+/ `focus_bigrams`), `GET /api/coach/metrics` (includes `weak_bigrams` +
+`trigram_rollup`), and `GET /api/stats/ngrams` (per-bigram table with class +
+consistency).
 
 ## Continuous integration
 
@@ -122,15 +166,24 @@ secrets/     keygen.sh (JWT keypair; *.pem gitignored)
 
 ## Adaptive engine
 
-The core differentiator lives in `backend/app/engine/adaptive.py` — a pure,
-unit-tested weighted key-pool scorer (`w_error·error_rate + w_latency·norm_latency
-+ w_recency·recency`) that surfaces the weakest keys and generates lessons
-weighting them ~3× within realistic bigrams/trigrams.
+The core differentiator lives in `backend/app/engine/`:
+
+- `adaptive.py` — a pure, unit-tested weighted key-pool scorer
+  (`w_error·error_rate + w_latency·norm_latency + w_recency·recency`) that surfaces
+  the weakest keys and generates lessons weighting them ~3× within realistic
+  pseudo-words, honouring the set of currently unlocked keys.
+- `ngrams.py` — pure bigram/trigram classification (SFB, rolls, alternation,
+  redirects) and n-gram weakness scoring (SFBs get a score bonus), feeding both the
+  Analysis tables and what the coach sees.
+
+Bigram statistics are persisted in `ngram_stats`; a one-off backfill
+(`python -m app.db.backfill_ngrams`) seeds existing users from their retained
+keystrokes.
 
 ## Versioning
 
 Releases follow [Semantic Versioning](https://semver.org) against a declared
-public surface; see [CHANGELOG.md](./CHANGELOG.md).
+public surface; see [CHANGELOG.md](./CHANGELOG.md). Current release: **0.31.1**.
 
 **Public surface** (what the version speaks about):
 
