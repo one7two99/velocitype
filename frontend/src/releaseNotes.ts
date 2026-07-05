@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.25.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Analysis now has a detailed per-key breakdown: a sortable, searchable table with each key's hand/finger, attempts, errors, error %, WPM, latency, consistency and a status verdict. Filter to just the keys that need work.",
+      ],
+      changed: [
+        "The Accuracy / Speed / Consistency heatmaps moved to their own Heatmaps menu item; Analysis is now the per-key table.",
+      ],
+    },
+  },
+  {
     version: "0.24.0",
     date: "2026-07-05",
     sections: {
