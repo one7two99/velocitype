@@ -9,6 +9,12 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-07-05
+
+### Changed
+- Moved the version badge next to the TypeForge logo (top-left) instead of beside
+  the user menu.
+
 ## [0.19.0] - 2026-07-05
 
 ### Added
@@ -223,7 +229,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.19.1...HEAD
+[0.19.1]: https://github.com/adi-infra/typeforge/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/adi-infra/typeforge/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/adi-infra/typeforge/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/adi-infra/typeforge/compare/v0.16.0...v0.17.0
