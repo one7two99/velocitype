@@ -10,6 +10,7 @@ from app.models.prompt import UserPrompt
 from app.models.refresh_token import RefreshToken
 from app.models.session import TypingSession
 from app.models.user import User
+from app.models.user_settings import UserSettings
 
 __all__ = [
     "Base",
@@ -23,4 +24,5 @@ __all__ = [
     "UserPrompt",
     "UserAiConfig",
     "NgramStat",
+    "UserSettings",
 ]

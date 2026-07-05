@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.30.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Your settings (theme, layout, session goal, duration, word count, target WPM) now sync across browsers and devices — they're saved to your account and follow you when you sign in elsewhere.",
+      ],
+    },
+  },
+  {
     version: "0.29.0",
     date: "2026-07-05",
     sections: {

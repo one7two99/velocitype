@@ -110,6 +110,16 @@ export interface KeyHeatmap {
   keys: KeyHeatCell[];
 }
 
+export interface UserSettings {
+  theme: "dark" | "light" | "system";
+  layout_id: string;
+  goal: "time" | "words";
+  duration_s: number;
+  word_count: number;
+  target_wpm: number;
+  saved: boolean;
+}
+
 export interface NgramRow {
   ngram: string;
   cls: string | null; // BigramClass value (SFB / ROLL_IN / …)

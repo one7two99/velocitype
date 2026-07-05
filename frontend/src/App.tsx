@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { Spinner } from "./components/ui";
 import { useAuth } from "./hooks/useAuth";
+import { useSettingsSync } from "./hooks/useSettingsSync";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CoachPage } from "./pages/CoachPage";
@@ -29,6 +30,7 @@ function Protected({ children }: { children: React.ReactNode }) {
 export default function App() {
   const theme = useSettings((s) => s.theme);
   useEffect(() => applyTheme(theme), [theme]);
+  useSettingsSync();
 
   return (
     <Routes>

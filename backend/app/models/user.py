@@ -34,3 +34,4 @@ class User(Base):
     api_keys = relationship("ApiKey", back_populates="user", cascade="all, delete-orphan")
     prompts = relationship("UserPrompt", back_populates="user", uselist=False, cascade="all, delete-orphan")
     ai_config = relationship("UserAiConfig", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
