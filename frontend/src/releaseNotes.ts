@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.33.0",
+    date: "2026-07-06",
+    sections: {
+      added: [
+        "Coach drills now show which LLM generated them — a badge on the drill banner reads e.g. “✨ mistral-small-latest”, or “⚙ offline fallback” if the model wasn’t available. You can always see whether your chosen LLM produced the drill.",
+      ],
+      changed: [
+        "Bigram-focused drills use the LLM much more reliably instead of falling back to the built-in generator, especially early on when only a few keys are unlocked.",
+      ],
+    },
+  },
+  {
     version: "0.32.0",
     date: "2026-07-05",
     sections: {

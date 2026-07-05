@@ -127,6 +127,20 @@ def test_covers_focus():
     assert _covers_focus("the and for", ["z"]) is False
 
 
+def test_covers_focus_bigrams_relaxed():
+    from app.services.coach import _covers_focus
+
+    # Bigram focus: relaxed rule — at least half of the pairs present AND >=3
+    # total occurrences. "sc" x2, "lm" x1, "ru" x1 = 4 total, all 3 present.
+    lesson = "scan scale calm the and for rush"
+    assert _covers_focus(lesson, ["sc", "lm", "ru"]) is True
+    # Only one pair present once (total 1 occurrence) → not covered.
+    assert _covers_focus("calm the and for", ["sc", "lm", "ru"]) is False
+    # A single pair needs to actually recur (>=3 total) to count as a drill.
+    assert _covers_focus("scan the and for", ["sc"]) is False
+    assert _covers_focus("scan scale disco", ["sc"]) is True
+
+
 async def test_drill_reverifies_focus_and_falls_back(client, unique_user, monkeypatch):
     """A user with a weak key + an LLM that ignores it → deterministic fallback."""
     await _register(client, unique_user)
