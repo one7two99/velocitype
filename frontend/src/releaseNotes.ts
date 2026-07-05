@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.31.1",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "Progressive unlocking: early lessons now practise every unlocked key (previously the first set could show only a few letters like 'into', skipping e and a).",
+      ],
+    },
+  },
+  {
     version: "0.31.0",
     date: "2026-07-05",
     sections: {
