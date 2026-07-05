@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.15.0",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "Settings is back in the main navigation; the user menu (top-right) now holds Profile and Log out.",
+      ],
+    },
+  },
+  {
     version: "0.14.0",
     date: "2026-07-05",
     sections: {
