@@ -20,8 +20,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="tf-shell">
       <header className="tf-topbar">
-        <div className="tf-brand mono">
-          Type<span>Forge</span>
+        <div className="tf-brand-group">
+          <div className="tf-brand mono">
+            Type<span>Forge</span>
+          </div>
+          <button
+            className="tf-version mono"
+            onClick={() => setShowReleases(true)}
+            title="What's new"
+          >
+            v{__APP_VERSION__}
+          </button>
         </div>
         <nav className="tf-nav">
           {links.map((l) => (
@@ -38,13 +47,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="tf-topbar-right">
-          <button
-            className="tf-version mono"
-            onClick={() => setShowReleases(true)}
-            title="What's new"
-          >
-            v{__APP_VERSION__}
-          </button>
           <UserMenu username={user?.username} />
         </div>
       </header>

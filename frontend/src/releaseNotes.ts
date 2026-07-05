@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.19.1",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "The version badge now sits next to the TypeForge logo (top-left) for better visibility.",
+      ],
+    },
+  },
+  {
     version: "0.19.0",
     date: "2026-07-05",
     sections: {
