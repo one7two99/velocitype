@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useTypingEngine, type EngineResult } from "../../hooks/useTypingEngine";
 import { PaceIndicator } from "./PaceIndicator";
+import { SessionProgressBar } from "./SessionProgressBar";
 import { TypingText } from "./TypingText";
 import "./typing-session.css";
 
@@ -32,8 +33,20 @@ export function TypingSession({
   // Timed mode shows a countdown; otherwise elapsed time.
   const timeMs = durationMs ? durationMs - view.elapsedMs : view.elapsedMs;
 
+  // Lesson completion (used by the progress line in word-count mode).
+  const totalChars = view.words.reduce((n, w) => n + w.length, 0) || 1;
+  let typedChars = 0;
+  for (let i = 0; i < view.wordIndex; i++) typedChars += view.words[i].length;
+  typedChars += Math.min(view.charIndex, view.words[view.wordIndex]?.length ?? 0);
+  const progress = Math.min(1, typedChars / totalChars);
+
   return (
     <div className="tf-session">
+      <SessionProgressBar
+        durationMs={durationMs}
+        elapsedMs={view.elapsedMs}
+        progress={progress}
+      />
       <div className="tf-metricsbar mono">
         <span>
           <b>{view.liveWpm}</b> wpm
