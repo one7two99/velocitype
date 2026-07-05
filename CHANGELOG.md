@@ -9,6 +9,13 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.20.3] - 2026-07-05
+
+### Fixed
+- Session Complete panel: the Next Lesson / Try Again / Dashboard buttons now
+  always render on a single row (equal-width, no wrap) — "Dashboard" no longer
+  wrapped to the next line. Keyboard hints hide on very narrow screens.
+
 ## [0.20.2] - 2026-07-05
 
 ### Fixed
@@ -249,7 +256,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.2...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.3...HEAD
+[0.20.3]: https://github.com/adi-infra/typeforge/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/adi-infra/typeforge/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/adi-infra/typeforge/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/adi-infra/typeforge/compare/v0.19.1...v0.20.0
