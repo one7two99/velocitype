@@ -15,6 +15,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.18.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Coach drill mode: once started, every Trainer session generates a fresh drill targeting your current weak keys — until you switch back to adaptive.",
+        "The Coach page now shows exactly the metrics it uses (weak keys, avg WPM, accuracy, best WPM).",
+      ],
+      changed: [
+        "Generated drills are now verified to actually over-represent your weak keys; if the model's output doesn't, it falls back to the deterministic generator.",
+      ],
+    },
+  },
+  {
     version: "0.17.0",
     date: "2026-07-05",
     sections: {
