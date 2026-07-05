@@ -149,7 +149,54 @@ async def test_coach_metrics(client, unique_user):
     assert "lifetime" in body and "weak_keys" in body
 
 
+async def test_prompts_defaults_then_override(client, unique_user):
+    await _register(client, unique_user)
+    got = await client.get("/api/coach/prompts")
+    assert got.status_code == 200
+    body = got.json()
+    assert body["defaults"]["analysis_system"]  # non-empty default
+    assert body["custom"]["analysis_system"] is None  # no override yet
+
+    saved = await client.put(
+        "/api/coach/prompts",
+        json={"analysis_system": "You are a blunt coach.", "drill_user": "words {{focus}}"},
+    )
+    assert saved.status_code == 200
+    assert saved.json()["custom"]["analysis_system"] == "You are a blunt coach."
+    assert saved.json()["custom"]["drill_user"] == "words {{focus}}"
+
+    # Clearing (empty string) reverts to default.
+    cleared = await client.put("/api/coach/prompts", json={"analysis_system": ""})
+    assert cleared.json()["custom"]["analysis_system"] is None
+
+
+async def test_custom_prompt_is_used_in_analyze(client, unique_user, monkeypatch):
+    await _register(client, unique_user)
+    await client.put(
+        "/api/coach/prompts",
+        json={
+            "analysis_system": "SYSTEM-XYZ",
+            "analysis_user": "Analyse this: {{data}} — be brief.",
+        },
+    )
+    captured = {}
+
+    async def capture(prompt, system=None, num_predict=300):
+        captured["prompt"] = prompt
+        captured["system"] = system
+        return "ok"
+
+    monkeypatch.setattr(ollama, "generate", capture)
+    resp = await client.post("/api/coach/analyze")
+    assert resp.status_code == 200
+    assert captured["system"] == "SYSTEM-XYZ"
+    assert "Analyse this:" in captured["prompt"]
+    assert "{{data}}" not in captured["prompt"]  # placeholder was substituted
+    assert '"weak_keys"' in captured["prompt"]  # the JSON data was injected
+
+
 async def test_coach_requires_auth(client):
     assert (await client.post("/api/coach/analyze")).status_code == 401
     assert (await client.post("/api/coach/drill")).status_code == 401
     assert (await client.get("/api/coach/metrics")).status_code == 401
+    assert (await client.get("/api/coach/prompts")).status_code == 401

@@ -8,6 +8,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -15,8 +16,17 @@ from app.config import get_settings
 from app.db.session import get_db
 from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.errors import ProblemException
+from app.models.prompt import UserPrompt
 from app.models.user import User
-from app.schemas.coach import CoachAnalysis, CoachDrill, CoachStatus
+from app.schemas.coach import (
+    CoachAnalysis,
+    CoachDrill,
+    CoachPrompts,
+    CoachPromptsUpdate,
+    CoachStatus,
+    PromptCustom,
+    PromptSet,
+)
 from app.schemas.mcp import McpSummary
 from app.services import coach
 from app.services.mcp import build_summary
@@ -49,6 +59,46 @@ def _unavailable(exc: OllamaError) -> ProblemException:
 @router.get("/status", response_model=CoachStatus)
 async def coach_status(_: User = Depends(get_current_user)) -> CoachStatus:
     return CoachStatus(**await coach.status())
+
+
+@router.get("/prompts", response_model=CoachPrompts)
+async def get_prompts(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> CoachPrompts:
+    """Default AI-coach prompts + this user's overrides (null = using default)."""
+    row = (
+        await db.execute(select(UserPrompt).where(UserPrompt.user_id == user.id))
+    ).scalar_one_or_none()
+    custom = PromptCustom(
+        analysis_system=row.analysis_system if row else None,
+        analysis_user=row.analysis_user if row else None,
+        drill_system=row.drill_system if row else None,
+        drill_user=row.drill_user if row else None,
+    )
+    return CoachPrompts(defaults=PromptSet(**coach.DEFAULT_PROMPTS), custom=custom)
+
+
+@router.put("/prompts", response_model=CoachPrompts)
+async def put_prompts(
+    payload: CoachPromptsUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> CoachPrompts:
+    """Upsert the user's prompt overrides. A null/empty field clears the override."""
+    row = (
+        await db.execute(select(UserPrompt).where(UserPrompt.user_id == user.id))
+    ).scalar_one_or_none()
+    if row is None:
+        row = UserPrompt(user_id=user.id)
+        db.add(row)
+    # Empty string → None so it reverts to the default.
+    row.analysis_system = payload.analysis_system or None
+    row.analysis_user = payload.analysis_user or None
+    row.drill_system = payload.drill_system or None
+    row.drill_user = payload.drill_user or None
+    await db.commit()
+    return await get_prompts(db, user)
 
 
 @router.get("/metrics", response_model=McpSummary)

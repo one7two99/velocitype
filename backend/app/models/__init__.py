@@ -4,6 +4,7 @@ from app.models.api_key import ApiKey
 from app.models.key_stat import KeyStat
 from app.models.keystroke import Keystroke
 from app.models.layout import Layout
+from app.models.prompt import UserPrompt
 from app.models.refresh_token import RefreshToken
 from app.models.session import TypingSession
 from app.models.user import User
@@ -17,4 +18,5 @@ __all__ = [
     "RefreshToken",
     "ApiKey",
     "Layout",
+    "UserPrompt",
 ]

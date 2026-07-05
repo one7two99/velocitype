@@ -168,6 +168,24 @@ export interface CoachDrill {
   source: "ollama" | "fallback";
 }
 
+export interface PromptSet {
+  analysis_system: string;
+  analysis_user: string;
+  drill_system: string;
+  drill_user: string;
+}
+export interface PromptCustom {
+  analysis_system: string | null;
+  analysis_user: string | null;
+  drill_system: string | null;
+  drill_user: string | null;
+}
+export interface CoachPrompts {
+  defaults: PromptSet;
+  custom: PromptCustom;
+}
+export type PromptKey = keyof PromptSet;
+
 export interface CoachMetrics {
   user: string;
   generated_at: string;

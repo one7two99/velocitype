@@ -5,7 +5,9 @@ import type {
   CoachAnalysis,
   CoachDrill,
   CoachMetrics,
+  CoachPrompts,
   CoachStatus,
+  PromptCustom,
   KeyHeatmap,
   KeystrokeIn,
   LayoutList,
@@ -103,4 +105,7 @@ export const coachApi = {
     api.post<CoachAnalysis>(`/api/coach/analyze?layout_id=${layoutId}`),
   drill: (layoutId: string) =>
     api.post<CoachDrill>(`/api/coach/drill?layout_id=${layoutId}`),
+  getPrompts: () => api.get<CoachPrompts>("/api/coach/prompts"),
+  savePrompts: (custom: PromptCustom) =>
+    api.put<CoachPrompts>("/api/coach/prompts", custom),
 };

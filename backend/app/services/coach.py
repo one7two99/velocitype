@@ -13,39 +13,86 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import select
+
 from app.engine import adaptive
 from app.engine.layouts import get_layout
+from app.models.prompt import UserPrompt
 from app.models.user import User
 from app.schemas.session import WeakKeyInfo
 from app.services import ollama
 from app.services.key_stats import build_key_metrics
 from app.services.mcp import build_summary
 
+# ── Default prompts (user-overridable, per-user, in Settings → AI Settings) ──
+# Instruction templates use placeholders: {{data}} (analysis) / {{focus}} (drill).
 ANALYZE_SYSTEM = (
     "You are a concise, encouraging touch-typing coach for users on ergonomic "
     "split keyboards (Ferris Sweep, Colemak-DH). Give practical, specific advice. "
     "Never invent numbers; use only the data provided."
 )
-
+ANALYZE_USER = (
+    "Trainee data (JSON):\n{{data}}\n\n"
+    "Write a short coaching analysis (max ~160 words) in plain prose:\n"
+    "1) their current level in one sentence,\n"
+    "2) the 2-3 weakest keys and *why* they might lag (finger/hand),\n"
+    "3) one concrete practice recommendation for the next few sessions.\n"
+    "Address the user directly. No headings, no bullet symbols, no markdown."
+)
 DRILL_SYSTEM = (
     "You generate touch-typing drill text. You output ONLY the drill words, "
     "nothing else — no explanations, no markdown, no quotes."
 )
+DRILL_USER = (
+    "Create a touch-typing drill of about 50 common English words.\n"
+    "Focus keys to over-represent (~3x normal frequency): {{focus}}.\n"
+    "Rules:\n"
+    "- only real, common lowercase English words\n"
+    "- weave the focus keys into ordinary words (not random letters)\n"
+    "- words separated by single spaces, no numbers, no punctuation\n"
+    "- 40-60 words total\n"
+    "Output only the words."
+)
+
+DEFAULT_PROMPTS: dict[str, str] = {
+    "analysis_system": ANALYZE_SYSTEM,
+    "analysis_user": ANALYZE_USER,
+    "drill_system": DRILL_SYSTEM,
+    "drill_user": DRILL_USER,
+}
+
+
+async def get_effective_prompts(db: AsyncSession, user_id) -> dict[str, str]:
+    """Return the 4 prompts to use — the user's override where set, else default."""
+    row = (
+        await db.execute(select(UserPrompt).where(UserPrompt.user_id == user_id))
+    ).scalar_one_or_none()
+    out = dict(DEFAULT_PROMPTS)
+    if row is not None:
+        for key in out:
+            val = getattr(row, key)
+            if val:  # non-empty override
+                out[key] = val
+    return out
+
+
+def _inject(template: str, placeholder: str, value: str) -> str:
+    """Substitute the data placeholder; if the user removed it, append the data so
+    it's never silently dropped."""
+    if placeholder in template:
+        return template.replace(placeholder, value)
+    return f"{template}\n\n{value}"
 
 
 async def analyze(db: AsyncSession, user: User, layout_id: str) -> str:
     """Return a short natural-language coaching analysis for the user."""
+    prompts = await get_effective_prompts(db, user.id)
     summary = await build_summary(db, user, layout_id)
     data = json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)
-    prompt = (
-        f"Trainee data (JSON):\n{data}\n\n"
-        "Write a short coaching analysis (max ~160 words) in plain prose:\n"
-        "1) their current level in one sentence,\n"
-        "2) the 2-3 weakest keys and *why* they might lag (finger/hand),\n"
-        "3) one concrete practice recommendation for the next few sessions.\n"
-        "Address the user directly. No headings, no bullet symbols, no markdown."
+    user_prompt = _inject(prompts["analysis_user"], "{{data}}", data)
+    return await ollama.generate(
+        user_prompt, system=prompts["analysis_system"], num_predict=280
     )
-    return await ollama.generate(prompt, system=ANALYZE_SYSTEM, num_predict=280)
 
 
 def _weak_info(metrics, scored) -> list[WeakKeyInfo]:
@@ -118,16 +165,8 @@ async def drill(
     allowed_letters = {c for c in layout.characters if c.isalpha()}
     focus = ", ".join(weak_chars) if weak_chars else "a balanced mix of all keys"
 
-    prompt = (
-        f"Create a touch-typing drill of about 50 common English words.\n"
-        f"Focus keys to over-represent (~3x normal frequency): {focus}.\n"
-        "Rules:\n"
-        "- only real, common lowercase English words\n"
-        "- weave the focus keys into ordinary words (not random letters)\n"
-        "- words separated by single spaces, no numbers, no punctuation\n"
-        "- 40-60 words total\n"
-        "Output only the words."
-    )
+    prompts = await get_effective_prompts(db, user.id)
+    prompt = _inject(prompts["drill_user"], "{{focus}}", focus)
 
     # Generate + verify: the drill must be typeable AND actually over-represent the
     # focus keys. Retry once, else use the deterministic generator (which weights
@@ -136,7 +175,9 @@ async def drill(
     lesson: str | None = None
     for _ in range(2):
         try:
-            raw = await ollama.generate(prompt, system=DRILL_SYSTEM, num_predict=160)
+            raw = await ollama.generate(
+                prompt, system=prompts["drill_system"], num_predict=160
+            )
         except ollama.OllamaError:
             break
         candidate = _sanitize_lesson(raw, allowed_letters, min_words=40)

@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.21.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "AI Settings: view and override the exact prompts sent to the local AI coach — a system prompt and instruction for both Get analysis and Start coaching drills. Your stats are injected automatically via {{data}} / {{focus}} placeholders. Overrides are saved per user; Reset to defaults restores the built-in prompts.",
+      ],
+      changed: [
+        'The "Coach" menu entry is now "AI-Coach".',
+      ],
+    },
+  },
+  {
     version: "0.20.3",
     date: "2026-07-05",
     sections: {

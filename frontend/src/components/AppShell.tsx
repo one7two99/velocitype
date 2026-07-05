@@ -9,7 +9,7 @@ const links = [
   { to: "/", label: "Trainer", end: true },
   { to: "/dashboard", label: "Dashboard", end: false },
   { to: "/analysis", label: "Analysis", end: false },
-  { to: "/coach", label: "Coach", end: false },
+  { to: "/coach", label: "AI-Coach", end: false },
   { to: "/settings", label: "Settings", end: false },
 ];
 
