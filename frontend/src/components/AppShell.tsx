@@ -7,10 +7,10 @@ import "./app-shell.css";
 
 const links = [
   { to: "/", label: "Trainer", end: true },
+  { to: "/coach", label: "AI-Coach", end: false },
   { to: "/dashboard", label: "Dashboard", end: false },
   { to: "/analysis", label: "Analysis", end: false },
   { to: "/heatmaps", label: "Heatmaps", end: false },
-  { to: "/coach", label: "AI-Coach", end: false },
   { to: "/settings", label: "Settings", end: false },
 ];
 

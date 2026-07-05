@@ -106,6 +106,23 @@ export function AnalysisPage() {
   const [search, setSearch] = useState("");
   const [onlyWork, setOnlyWork] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [activeSec, setActiveSec] = useState("tf-sec-perkey");
+
+  // Highlight the section currently in view in the sub-nav.
+  useEffect(() => {
+    if (heat.isLoading) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActiveSec(e.target.id);
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    for (const id of ["tf-sec-perkey", "tf-sec-bigrams"]) {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    }
+    return () => obs.disconnect();
+  }, [heat.isLoading]);
 
   // Pre-select the keys that need work whenever fresh data arrives.
   useEffect(() => {
@@ -174,6 +191,11 @@ export function AnalysisPage() {
   const fmtNum = (v: number | null, digits = 0) =>
     v == null ? "—" : v.toFixed(digits);
 
+  const scrollTo = (id: string) => {
+    setActiveSec(id); // immediate feedback; the observer keeps it in sync on scroll
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const toggle = (c: string) =>
     setSelected((s) => {
       const n = new Set(s);
@@ -195,8 +217,26 @@ export function AnalysisPage() {
     }
   };
 
+  const SECTIONS = [
+    { id: "tf-sec-perkey", label: "Per-key breakdown" },
+    { id: "tf-sec-bigrams", label: "Bigram breakdown" },
+  ];
+
   return (
     <div className="tf-dash">
+      <nav className="tf-analysis-nav">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            className={`tf-subnav-link${activeSec === s.id ? " tf-subnav-link--on" : ""}`}
+            onClick={() => scrollTo(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
+      </nav>
+
+      <section id="tf-sec-perkey" className="tf-analysis-sec">
       <Card>
         <div className="tf-analysis-head">
           <h3 className="tf-card-title">Per-key breakdown</h3>
@@ -302,8 +342,11 @@ export function AnalysisPage() {
           </div>
         )}
       </Card>
+      </section>
 
-      <BigramBreakdown />
+      <section id="tf-sec-bigrams" className="tf-analysis-sec">
+        <BigramBreakdown />
+      </section>
     </div>
   );
 }

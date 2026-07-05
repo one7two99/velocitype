@@ -1,3 +1,31 @@
+.tf-analysis-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+.tf-subnav-link {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+.tf-subnav-link:hover {
+  color: var(--text-primary);
+}
+.tf-subnav-link--on {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tf-analysis-sec {
+  scroll-margin-top: 80px; /* clear the sticky topbar when jumping */
+}
+
 .tf-analysis-head {
   display: flex;
   align-items: baseline;
