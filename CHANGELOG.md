@@ -9,6 +9,12 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-07-05
+
+### Fixed
+- Ferris Sweep heatmap now renders the correct **2 thumb keys per hand** (it
+  previously showed 3 on the left and 2 on the right).
+
 ## [0.20.1] - 2026-07-05
 
 ### Changed
@@ -243,7 +249,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.1...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.20.2...HEAD
+[0.20.2]: https://github.com/adi-infra/typeforge/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/adi-infra/typeforge/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/adi-infra/typeforge/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/adi-infra/typeforge/compare/v0.19.0...v0.19.1

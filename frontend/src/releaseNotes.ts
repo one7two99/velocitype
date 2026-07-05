@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.20.2",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "The Ferris Sweep keyboard now shows the correct 2 thumb keys per hand (was 3 on the left, 2 on the right).",
+      ],
+    },
+  },
+  {
     version: "0.20.1",
     date: "2026-07-05",
     sections: {

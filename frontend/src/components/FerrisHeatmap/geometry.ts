@@ -93,19 +93,21 @@ export function buildPositions(layout: LayoutInfo): {
   const maxStagger = Math.max(...COL_STAGGER_L, ...COL_STAGGER_R);
   const gridHeight = maxStagger + 3 * KEY + 2 * GAP;
 
-  // Thumb cluster: 3 keys per hand along the bottom.
-  const thumbLabels = layout.thumb_keys.slice(0, 6);
+  // Thumb cluster: the Ferris Sweep has 2 thumb keys per hand, sitting under the
+  // inner columns (index / inner-index).
+  const thumbLabels = layout.thumb_keys.slice(0, 4);
   const thumbs: { label: string; x: number; y: number }[] = [];
   const thumbY = gridHeight + 14;
-  const leftThumbBase = leftWidth - 3 * (KEY + GAP);
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
+    // left hand: two inner (right-most) columns
     thumbs.push({
       label: thumbLabels[i] ?? "",
-      x: leftThumbBase + i * (KEY + GAP),
+      x: leftWidth - (2 - i) * (KEY + GAP),
       y: thumbY,
     });
+    // right hand: two inner (left-most) columns
     thumbs.push({
-      label: thumbLabels[i + 3] ?? "",
+      label: thumbLabels[i + 2] ?? "",
       x: rightStartX + i * (KEY + GAP),
       y: thumbY,
     });
