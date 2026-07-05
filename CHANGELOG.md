@@ -9,6 +9,20 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.31.3] - 2026-07-05
+
+### Fixed
+- The dashboard's **Recent Sessions** no longer lists sessions with blank
+  WPM/accuracy. Only completed sessions (which actually carry metrics) are shown;
+  incomplete/abandoned starts are excluded.
+
+### Changed
+- Starting a session now **sweeps the user's abandoned, never-typed sessions**
+  (started but never completed and with no keystrokes). Opening the Trainer,
+  changing settings, or leaving mid-lesson no longer leaves behind empty
+  null-metric rows that pile up in history. Genuine partial attempts (which
+  received keystrokes) are kept.
+
 ## [0.31.2] - 2026-07-05
 
 ### Fixed
@@ -470,7 +484,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/one7two99/velocitype/compare/v0.31.2...HEAD
+[Unreleased]: https://github.com/one7two99/velocitype/compare/v0.31.3...HEAD
+[0.31.3]: https://github.com/one7two99/velocitype/compare/v0.31.2...v0.31.3
 [0.31.2]: https://github.com/one7two99/velocitype/compare/v0.31.1...v0.31.2
 [0.31.1]: https://github.com/one7two99/velocitype/compare/v0.31.0...v0.31.1
 [0.31.0]: https://github.com/one7two99/velocitype/compare/v0.30.0...v0.31.0
