@@ -240,14 +240,39 @@ def _weak_alpha(weak_keys: list[str], typeable: set[str]) -> list[str]:
     return [k.lower() for k in weak_keys if len(k) == 1 and k.isalpha() and k.lower() in typeable]
 
 
-def _drill_clusters(key: str, rng: random.Random, count: int = 3) -> list[str]:
-    """Build short pronounceable-ish clusters embedding ``key`` inside common
-    bigram/trigram shells, so rare weak keys still get realistic practice."""
+def _usable_shells(typeable: set[str]) -> list[str]:
+    """Common bigram/trigram shells fully typeable on the given key set."""
+    shells = COMMON_TRIGRAM_SHELLS + COMMON_BIGRAM_SHELLS
+    return [s for s in shells if set(s) <= typeable]
+
+
+def _pseudo_word(typeable_list: list[str], rng: random.Random, key: str | None = None) -> str:
+    """A random combo built ONLY from ``typeable_list`` (keybr-style), for when
+    too few real words/shells fit a small unlocked key set. Never emits a char
+    outside the set. ``key`` (if given and typeable) is guaranteed to appear."""
+    length = rng.randint(2, 4)
+    letters = [rng.choice(typeable_list) for _ in range(length)]
+    if key and key in typeable_list:
+        letters[rng.randint(0, length - 1)] = key
+    return "".join(letters)
+
+
+def _drill_clusters(
+    key: str, rng: random.Random, typeable: set[str], count: int = 3
+) -> list[str]:
+    """Short clusters embedding ``key``, using common shells that are fully
+    typeable and falling back to pure pseudo-words when the key set is too small.
+    Output is always within ``typeable``."""
+    shells = _usable_shells(typeable)
+    typeable_list = sorted(typeable)
     clusters: list[str] = []
     for _ in range(count):
-        shell = rng.choice(COMMON_TRIGRAM_SHELLS if rng.random() < 0.6 else COMMON_BIGRAM_SHELLS)
-        pos = rng.randint(0, len(shell))
-        clusters.append(shell[:pos] + key + shell[pos:])
+        if shells and rng.random() < 0.7:
+            shell = rng.choice(shells)
+            pos = rng.randint(0, len(shell))
+            clusters.append(shell[:pos] + key + shell[pos:])
+        else:
+            clusters.append(_pseudo_word(typeable_list, rng, key))
     return clusters
 
 
@@ -289,6 +314,7 @@ def generate_lesson(
     weak = _weak_alpha(weak_keys, typeable)
     weakset = set(weak)
 
+    typeable_list = sorted(typeable)
     n_words = target_word_count(min_words, target_seconds)
     words_pool, pool_weights = _weighted_word_pool(typeable, weakset)
 
@@ -300,18 +326,28 @@ def generate_lesson(
     tokens: list[str] = []
     if words_pool:
         tokens.extend(rng.choices(words_pool, weights=pool_weights, k=n_words))
-    else:  # pathological layout with no matching words: fall back to clusters
-        for k in (weak or list(typeable)):
-            tokens.extend(_drill_clusters(k, rng, count=8))
+    elif typeable_list:
+        # Too few real words for this key set (e.g. early progressive unlocking):
+        # generate keybr-style pseudo-words from the unlocked letters only.
+        pool = weak or typeable_list
+        tokens.extend(_pseudo_word(typeable_list, rng, rng.choice(pool)) for _ in range(n_words))
 
     # Sprinkle drill clusters for orphan weak keys throughout the lesson.
     for k in orphan_weak:
-        for cluster in _drill_clusters(k, rng, count=max(3, n_words // 10)):
+        for cluster in _drill_clusters(k, rng, typeable, count=max(3, n_words // 10)):
             insert_at = rng.randint(0, len(tokens)) if tokens else 0
             tokens.insert(insert_at, cluster)
 
-    # Guarantee the minimum word count even after filtering.
-    while len(tokens) < n_words and words_pool:
-        tokens.append(rng.choices(words_pool, weights=pool_weights, k=1)[0])
+    # Guarantee the minimum word count, using real words when available else
+    # pseudo-words (so small unlocked sets still yield a full-length lesson).
+    while len(tokens) < n_words:
+        if words_pool:
+            tokens.append(rng.choices(words_pool, weights=pool_weights, k=1)[0])
+        elif typeable_list:
+            tokens.append(_pseudo_word(typeable_list, rng, rng.choice(weak or typeable_list)))
+        else:
+            break
 
+    # Invariant: never emit a character outside the allowed set.
+    tokens = [t for t in tokens if set(t) <= typeable]
     return " ".join(tokens)

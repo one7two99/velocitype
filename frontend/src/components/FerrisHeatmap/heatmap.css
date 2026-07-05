@@ -63,3 +63,16 @@
   z-index: 5;
 }
 .tf-heat-tooltip strong { color: var(--accent); }
+
+/* Locked keys (progressive unlocking): greyed with a lock glyph. */
+.tf-key-locked {
+  fill: var(--bg-base);
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+.tf-key-locked-label {
+  font-size: 13px;
+  opacity: 0.55;
+  pointer-events: none;
+}

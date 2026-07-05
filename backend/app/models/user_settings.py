@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,6 +28,9 @@ class UserSettings(Base):
     duration_s: Mapped[int] = mapped_column(Integer, server_default=text("60"), nullable=False)
     word_count: Mapped[int] = mapped_column(Integer, server_default=text("25"), nullable=False)
     target_wpm: Mapped[int] = mapped_column(Integer, server_default=text("40"), nullable=False)
+    progressive_unlock: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), nullable=False)
+    unlock_threshold_pct: Mapped[int] = mapped_column(Integer, server_default=text("90"), nullable=False)
+    unlock_window_sessions: Mapped[int] = mapped_column(Integer, server_default=text("3"), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )

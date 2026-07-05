@@ -11,10 +11,19 @@ from app.engine.layouts import DEFAULT_LAYOUT_ID, get_layout
 from app.errors import ProblemException
 from app.models.layout import Layout
 from app.models.user import User
-from app.schemas.lesson import LayoutInfo, LayoutList, NextLessonResponse
+from app.schemas.lesson import LayoutInfo, LayoutList, NextLessonResponse, UnlockState
+from app.services import progress
 from app.services.lessons import generate_adaptive_lesson
 
 router = APIRouter(prefix="/api/lessons", tags=["lessons"])
+
+
+def _require_layout(layout_id: str) -> None:
+    if get_layout(layout_id) is None:
+        raise ProblemException(
+            status_code=422, title="Unprocessable Entity",
+            detail=f"Unknown layout '{layout_id}'.", type_="about:unknown-layout",
+        )
 
 
 @router.get("/next", response_model=NextLessonResponse)
@@ -38,6 +47,28 @@ async def next_lesson(
         weak_keys=weak,
         word_count=len(lesson.split()),
     )
+
+
+@router.get("/unlock", response_model=UnlockState)
+async def unlock_status(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+) -> UnlockState:
+    _require_layout(layout_id)
+    return UnlockState(**await progress.unlock_state(db, user.id, layout_id))
+
+
+@router.post("/unlock/reset", response_model=UnlockState)
+async def reset_unlock(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
+) -> UnlockState:
+    """Restart progressive unlocking for this layout at the initial small set."""
+    _require_layout(layout_id)
+    await progress.reset_progression(db, user.id, layout_id)
+    return UnlockState(**await progress.unlock_state(db, user.id, layout_id))
 
 
 @router.get("/layouts", response_model=LayoutList)

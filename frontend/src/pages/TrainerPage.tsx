@@ -28,6 +28,7 @@ export function TrainerPage() {
   const [startWeak, setStartWeak] = useState<WeakKeyInfo[]>([]);
   const [result, setResult] = useState<EngineResult | null>(null);
   const [serverWeak, setServerWeak] = useState<WeakKeyInfo[]>([]);
+  const [unlockedChar, setUnlockedChar] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -127,9 +128,11 @@ export function TrainerPage() {
           target_wpm: targetWpm,
         });
         setServerWeak(resp.weak_keys);
+        setUnlockedChar(resp.unlocked_char ?? null);
         // Session is saved → refresh dashboard/analysis data (stats + history).
         qc.invalidateQueries({ queryKey: ["stats"] });
         qc.invalidateQueries({ queryKey: ["sessions"] });
+        if (resp.unlocked_char) qc.invalidateQueries({ queryKey: ["lessons", "unlock"] });
       } catch (err) {
         setSaveError(
           err instanceof ApiError ? err.message : "Failed to save session.",
@@ -199,6 +202,7 @@ export function TrainerPage() {
           weakKeys={serverWeak}
           saving={saving}
           saveError={saveError}
+          unlockedChar={unlockedChar}
           onNext={() => startSession()}
           onRetry={() => startSession({ reuseLesson: lesson })}
         />

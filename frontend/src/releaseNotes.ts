@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.31.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Progressive key unlocking (keybr-style): start with a few keys and unlock the next once you hit your target speed over several sessions. Tune the threshold %, mastery window and toggle it in Preferences. Lessons and AI drills only use unlocked keys; Heatmaps shows progress and Session Complete celebrates each newly unlocked key.",
+      ],
+      changed: [
+        "Existing accounts keep all keys unlocked — enable or reset progression anytime in Preferences.",
+      ],
+    },
+  },
+  {
     version: "0.30.0",
     date: "2026-07-05",
     sections: {

@@ -23,7 +23,7 @@ from app.models.ai_config import UserAiConfig
 from app.models.prompt import UserPrompt
 from app.models.user import User
 from app.schemas.session import WeakKeyInfo
-from app.services import crypto, llm
+from app.services import crypto, llm, progress
 from app.services.key_stats import build_key_metrics
 from app.services.mcp import build_summary
 from app.services.ngram_stats import build_ngram_metrics, build_trigram_rollup
@@ -316,9 +316,14 @@ async def drill(
     cfg = await get_ai_config(db, user.id)
     metrics = await build_key_metrics(db, user.id, layout_id)
 
+    # Restrict everything to the user's unlocked keys (progressive unlocking).
+    settings = await progress.get_user_settings(db, user.id)
+    unlocked = set(await progress.get_unlocked_chars(db, user.id, layout, settings))
+    metrics = [m for m in metrics if m.character in unlocked]
+
     # `cover` = tokens the drill must over-represent (chars or bigram substrings);
     # `fallback_chars` = single chars fed to the deterministic generator.
-    bigrams = _valid_bigrams(focus_bigrams, layout) if focus_bigrams else []
+    bigrams = [b for b in _valid_bigrams(focus_bigrams, layout) if set(b) <= unlocked] if focus_bigrams else []
     if bigrams:
         nmetrics = await build_ngram_metrics(db, user.id, layout_id)
         weak_info = _bigram_weak_info(bigrams, nmetrics)
@@ -327,8 +332,10 @@ async def drill(
         fallback_chars = list(dict.fromkeys(c for b in bigrams for c in b))
     else:
         picked = _focus_from_keys(focus_keys, layout, metrics) if focus_keys else ([], [])
-        if picked[0]:
-            weak_chars, weak_info = picked
+        picked_chars = [c for c in picked[0] if c in unlocked]
+        if picked_chars:
+            weak_chars = picked_chars
+            weak_info = [wi for wi in picked[1] if wi.char in unlocked]
         else:
             scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
             weak_scored = [s for s in scored if s.score > 0.0]
@@ -338,9 +345,12 @@ async def drill(
         cover = weak_chars
         fallback_chars = weak_chars
 
-    allowed_letters = {c for c in layout.characters if c.isalpha()}
+    unlocked_chars = sorted(c for c in unlocked if len(c) == 1)
+    allowed_letters = {c for c in unlocked_chars if c.isalpha()}
     prompts = await get_effective_prompts(db, user.id)
     prompt = _inject(prompts["drill_user"], "{{focus}}", focus)
+    # Hard constraint so the model never emits a not-yet-unlocked key.
+    prompt += f"\n\nUse ONLY these letters (plus spaces): {' '.join(unlocked_chars)}."
 
     # Generate + verify: the drill must be typeable AND actually over-represent the
     # focus tokens (chars or bigram substrings). Retry once, else use the
@@ -360,7 +370,7 @@ async def drill(
             break
 
     if lesson is None:
-        lesson = adaptive.generate_lesson(fallback_chars, layout.characters)
+        lesson = adaptive.generate_lesson(fallback_chars, list(unlocked))
         source = "fallback"
 
     return lesson, weak_info, source, cfg.model

@@ -7,6 +7,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# Progressive unlocking (keybr-style). Keys are revealed in this order; the first
+# INITIAL_UNLOCKED are available from the start. English letter frequency puts the
+# home row first on Colemak-DH by design, so a frequency order is also pedagogical.
+INITIAL_UNLOCKED = 6
+_FREQ_ORDER = "etaoinsrhldcumfpgwybvkjxqz"
+_PUNCT_ORDER = ";,'-./"
+
 
 @dataclass(frozen=True)
 class Layout:
@@ -21,6 +28,16 @@ class Layout:
         """Trainable characters for this layout (alpha + punctuation on-board)."""
         return list(self.hand_map.keys())
 
+    @property
+    def unlock_order(self) -> list[str]:
+        """Deterministic progressive-unlock order: frequent letters first, then
+        punctuation, then any remaining trainable char (safety net)."""
+        chars = set(self.hand_map.keys())
+        ordered = [c for c in _FREQ_ORDER if c in chars]
+        ordered += [c for c in _PUNCT_ORDER if c in chars]
+        ordered += [c for c in self.hand_map.keys() if c not in ordered]
+        return ordered
+
     def to_dict(self) -> dict:
         return {
             "id": self.id,
@@ -28,6 +45,7 @@ class Layout:
             "hand_map": self.hand_map,
             "finger_map": self.finger_map,
             "thumb_keys": self.thumb_keys,
+            "unlock_order": self.unlock_order,
         }
 
 

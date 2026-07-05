@@ -18,6 +18,7 @@ interface Props {
   weakKeys: WeakKeyInfo[];
   saving: boolean;
   saveError: string | null;
+  unlockedChar?: string | null;
   onNext: () => void;
   onRetry: () => void;
 }
@@ -27,6 +28,7 @@ export function ResultsPanel({
   weakKeys,
   saving,
   saveError,
+  unlockedChar,
   onNext,
   onRetry,
 }: Props) {
@@ -75,6 +77,13 @@ export function ResultsPanel({
     <div className="tf-results-overlay">
       <div className="tf-results" role="dialog" aria-label="Session complete">
         <h2>Session Complete</h2>
+
+        {unlockedChar && (
+          <div className="tf-results-unlock">
+            🔓 New key unlocked:{" "}
+            <b className="mono">{unlockedChar === " " ? "␣" : unlockedChar}</b>
+          </div>
+        )}
 
         <div className="tf-results-stats">
           {stats.map((s) => (

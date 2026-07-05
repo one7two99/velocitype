@@ -23,6 +23,10 @@ export function HeatmapsPage() {
     queryKey: ["layouts"],
     queryFn: lessonsApi.layouts,
   });
+  const unlock = useQuery({
+    queryKey: ["lessons", "unlock", layoutId],
+    queryFn: () => lessonsApi.unlock(layoutId),
+  });
 
   const layoutInfo = useMemo(
     () =>
@@ -40,6 +44,9 @@ export function HeatmapsPage() {
   }
 
   const cells = heat.data?.keys ?? [];
+  // Locked-key overlay only when progressive unlocking is active.
+  const unlockedKeys =
+    unlock.data?.progressive ? unlock.data.unlocked : undefined;
 
   // How many measured keys reach the chosen WPM threshold.
   const measured = cells.filter((k) => k.attempts >= 5 && k.avg_latency_ms);
@@ -49,11 +56,22 @@ export function HeatmapsPage() {
 
   return (
     <div className="tf-dash">
+      {unlock.data?.progressive && (
+        <Card>
+          <p className="tf-settings-note">
+            🔓 Progressive unlocking — <b className="mono">{unlock.data.unlocked_count}</b>
+            /{unlock.data.total} keys unlocked
+            {unlock.data.next_char
+              ? ` · next: ${unlock.data.next_char === " " ? "␣" : unlock.data.next_char}`
+              : " · all keys unlocked!"}
+          </p>
+        </Card>
+      )}
       <Card>
         <h3 className="tf-card-title">Key Heatmap — Accuracy</h3>
         <div className="tf-heatmap-center">
           {layoutInfo && (
-            <FerrisHeatmap layout={layoutInfo} cells={cells} metric="error" />
+            <FerrisHeatmap layout={layoutInfo} cells={cells} metric="error" unlocked={unlockedKeys} />
           )}
         </div>
         <p className="tf-heat-legend">
@@ -92,6 +110,7 @@ export function HeatmapsPage() {
               cells={cells}
               metric="speed"
               target={threshold}
+              unlocked={unlockedKeys}
             />
           )}
         </div>
@@ -106,7 +125,7 @@ export function HeatmapsPage() {
         <h3 className="tf-card-title">Key Heatmap — Consistency</h3>
         <div className="tf-heatmap-center">
           {layoutInfo && (
-            <FerrisHeatmap layout={layoutInfo} cells={cells} metric="consistency" />
+            <FerrisHeatmap layout={layoutInfo} cells={cells} metric="consistency" unlocked={unlockedKeys} />
           )}
         </div>
         <p className="tf-heat-legend">

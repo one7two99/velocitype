@@ -81,6 +81,7 @@ interface Props {
   metric?: HeatMetric;
   target?: number;
   compact?: boolean;
+  unlocked?: string[]; // when set, keys not in this list render as locked
 }
 
 export function FerrisHeatmap({
@@ -89,10 +90,15 @@ export function FerrisHeatmap({
   metric = "error",
   target = 40,
   compact = false,
+  unlocked,
 }: Props) {
   const { keys, width, height, thumbs } = useMemo(
     () => buildPositions(layout),
     [layout],
+  );
+  const unlockedSet = useMemo(
+    () => (unlocked ? new Set(unlocked) : null),
+    [unlocked],
   );
   const byChar = useMemo(() => {
     const m = new Map<string, KeyHeatCell>();
@@ -136,6 +142,23 @@ export function FerrisHeatmap({
                   textAnchor="middle"
                 >
                   {k.label.length > 3 ? k.label.slice(0, 3) : k.label}
+                </text>
+              </g>
+            );
+          }
+          // Locked keys (progressive unlocking): greyed with a lock, inert.
+          if (unlockedSet && !unlockedSet.has(k.char)) {
+            return (
+              <g key={k.char} transform={`translate(${k.x},${k.y})`}>
+                <rect width={KEY_SIZE} height={KEY_SIZE} rx={7} className="tf-key-locked" />
+                <text
+                  x={KEY_SIZE / 2}
+                  y={KEY_SIZE / 2}
+                  className="tf-key-locked-label"
+                  dominantBaseline="central"
+                  textAnchor="middle"
+                >
+                  🔒
                 </text>
               </g>
             );
