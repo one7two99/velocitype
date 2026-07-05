@@ -1,0 +1,29 @@
+{
+	admin off
+}
+
+{$SITE_ADDRESS:-:80} {
+	encode zstd gzip
+
+	# Security headers (Section 2). CSP is conservative and self-only; loosen as
+	# the frontend's asset needs are known.
+	header {
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin"
+		-Server
+	}
+
+	# API traffic → FastAPI. The trailing path is preserved (FastAPI mounts /api/*).
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	# Everything else → the built SPA. Empty until the frontend is built.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

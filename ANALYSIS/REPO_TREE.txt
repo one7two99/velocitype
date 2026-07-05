@@ -1,0 +1,210 @@
+Velocitype — repository structure
+Generated for external architecture analysis.
+Excluded: .git, node_modules, dist, build, .next, __pycache__, .venv, venv,
+target, coverage, *.log, and container data/volume dirs (pgdata, *_data, ollama models, uploads).
+
+.
+├── ANALYSIS
+│   ├── key-files
+│   └── REPO_TREE.txt
+├── backend
+│   ├── alembic
+│   │   ├── versions
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_key_consistency.py
+│   │   │   ├── 0003_user_prompts.py
+│   │   │   └── 0004_user_ai_config.py
+│   │   ├── env.py
+│   │   └── script.py.mako
+│   ├── app
+│   │   ├── auth
+│   │   │   ├── cookies.py
+│   │   │   ├── dependencies.py
+│   │   │   ├── __init__.py
+│   │   │   ├── password.py
+│   │   │   ├── rate_limit.py
+│   │   │   └── tokens.py
+│   │   ├── db
+│   │   │   ├── __init__.py
+│   │   │   ├── redis.py
+│   │   │   ├── seed.py
+│   │   │   ├── session.py
+│   │   │   └── wait_for_db.py
+│   │   ├── engine
+│   │   │   ├── adaptive.py
+│   │   │   ├── __init__.py
+│   │   │   └── layouts.py
+│   │   ├── models
+│   │   │   ├── ai_config.py
+│   │   │   ├── api_key.py
+│   │   │   ├── base.py
+│   │   │   ├── __init__.py
+│   │   │   ├── key_stat.py
+│   │   │   ├── keystroke.py
+│   │   │   ├── layout.py
+│   │   │   ├── prompt.py
+│   │   │   ├── refresh_token.py
+│   │   │   ├── session.py
+│   │   │   └── user.py
+│   │   ├── routers
+│   │   │   ├── auth.py
+│   │   │   ├── coach.py
+│   │   │   ├── __init__.py
+│   │   │   ├── keystrokes.py
+│   │   │   ├── lessons.py
+│   │   │   ├── mcp.py
+│   │   │   ├── sessions.py
+│   │   │   └── stats.py
+│   │   ├── schemas
+│   │   │   ├── auth.py
+│   │   │   ├── coach.py
+│   │   │   ├── __init__.py
+│   │   │   ├── keystroke.py
+│   │   │   ├── lesson.py
+│   │   │   ├── mcp.py
+│   │   │   ├── session.py
+│   │   │   └── stats.py
+│   │   ├── services
+│   │   │   ├── coach.py
+│   │   │   ├── crypto.py
+│   │   │   ├── __init__.py
+│   │   │   ├── key_stats.py
+│   │   │   ├── lessons.py
+│   │   │   ├── llm.py
+│   │   │   ├── mcp.py
+│   │   │   ├── mistral.py
+│   │   │   └── ollama.py
+│   │   ├── config.py
+│   │   ├── errors.py
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   └── version.py
+│   ├── .pytest_cache
+│   │   ├── v
+│   │   │   └── cache
+│   │   │       ├── lastfailed
+│   │   │       ├── nodeids
+│   │   │       └── stepwise
+│   │   ├── CACHEDIR.TAG
+│   │   ├── .gitignore
+│   │   └── README.md
+│   ├── tests
+│   │   ├── conftest.py
+│   │   ├── __init__.py
+│   │   ├── test_adaptive.py
+│   │   ├── test_ai_config.py
+│   │   ├── test_auth.py
+│   │   ├── test_coach.py
+│   │   ├── test_layouts.py
+│   │   ├── test_llm.py
+│   │   ├── test_meta.py
+│   │   └── test_sessions.py
+│   ├── alembic.ini
+│   ├── Dockerfile
+│   ├── entrypoint.sh
+│   ├── pytest.ini
+│   └── requirements.txt
+├── caddy
+│   └── Caddyfile
+├── .claude
+│   └── settings.local.json
+├── db
+│   └── init
+│       └── 01-app-role.sh
+├── frontend
+│   ├── src
+│   │   ├── api
+│   │   │   ├── client.ts
+│   │   │   ├── endpoints.ts
+│   │   │   └── types.ts
+│   │   ├── components
+│   │   │   ├── Charts
+│   │   │   │   └── index.tsx
+│   │   │   ├── FerrisHeatmap
+│   │   │   │   ├── FerrisHeatmap.tsx
+│   │   │   │   ├── geometry.ts
+│   │   │   │   └── heatmap.css
+│   │   │   ├── TypingEngine
+│   │   │   │   ├── pace-indicator.css
+│   │   │   │   ├── PaceIndicator.tsx
+│   │   │   │   ├── SessionProgressBar.tsx
+│   │   │   │   ├── session-progress.css
+│   │   │   │   ├── typing.css
+│   │   │   │   ├── typing-session.css
+│   │   │   │   ├── TypingSession.tsx
+│   │   │   │   └── TypingText.tsx
+│   │   │   ├── ui
+│   │   │   │   ├── index.tsx
+│   │   │   │   └── ui.css
+│   │   │   ├── account.css
+│   │   │   ├── AccountSection.tsx
+│   │   │   ├── ai-provider.css
+│   │   │   ├── AiProvider.tsx
+│   │   │   ├── ai-settings.css
+│   │   │   ├── AiSettings.tsx
+│   │   │   ├── app-shell.css
+│   │   │   ├── AppShell.tsx
+│   │   │   ├── release-notes.css
+│   │   │   ├── ReleaseNotes.tsx
+│   │   │   ├── results.css
+│   │   │   ├── ResultsPanel.tsx
+│   │   │   └── UserMenu.tsx
+│   │   ├── hooks
+│   │   │   ├── useAuth.tsx
+│   │   │   ├── useNavHotkeys.ts
+│   │   │   └── useTypingEngine.ts
+│   │   ├── pages
+│   │   │   ├── analysis.css
+│   │   │   ├── AnalysisPage.tsx
+│   │   │   ├── auth.css
+│   │   │   ├── AuthPage.tsx
+│   │   │   ├── coach.css
+│   │   │   ├── CoachPage.tsx
+│   │   │   ├── dashboard.css
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── HeatmapsPage.tsx
+│   │   │   ├── ProfilePage.tsx
+│   │   │   ├── settings.css
+│   │   │   ├── SettingsPage.tsx
+│   │   │   ├── trainer.css
+│   │   │   └── TrainerPage.tsx
+│   │   ├── stores
+│   │   │   ├── coachStore.ts
+│   │   │   └── settingsStore.ts
+│   │   ├── styles
+│   │   │   ├── global.css
+│   │   │   └── tokens.css
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── releaseNotes.ts
+│   │   └── vite-env.d.ts
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.app.tsbuildinfo
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── tsconfig.node.tsbuildinfo
+│   └── vite.config.ts
+├── .github
+│   └── workflows
+│       └── ci.yml
+├── secrets
+│   ├── jwt_private.pem
+│   ├── jwt_public.pem
+│   └── keygen.sh
+├── CHANGELOG.md
+├── Claude-initial-prompt.md
+├── docker-compose.override.yml
+├── docker-compose.yml
+├── .env
+├── .env.example
+├── .gitignore
+├── README.md
+├── TypeForge.pptx
+└── Velocitype_MVP_BriefingPack.md
+
+37 directories, 166 files

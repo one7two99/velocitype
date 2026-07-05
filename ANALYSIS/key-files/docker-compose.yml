@@ -1,0 +1,149 @@
+# Velocitype — production compose
+# Only Caddy exposes ports to the host. db/redis stay on the internal network.
+name: velocitype
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro          # built static files (empty at backend-only stage)
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    depends_on:
+      api:
+        condition: service_started
+      frontend:
+        condition: service_completed_successfully
+    networks: [velocitype_net]
+
+  # One-shot builder: compiles the SPA into the ./frontend/dist bind mount that
+  # Caddy serves, then exits. Rebuilds on every `up`; skip with
+  # `docker compose up --scale frontend=0` if dist is already built.
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend/dist:/app/dist
+    networks: [velocitype_net]
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      ENV: ${ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private
+      JWT_PUBLIC_KEY_PATH: /run/secrets/jwt_public
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      # Local LLM coaching (Ollama). No external LLM API is used.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}
+    secrets: [jwt_private, jwt_public]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    networks: [velocitype_net]
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      # Superuser (cluster admin). The least-privilege app role is created by the init script.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: postgres
+      # Consumed by the init script to provision the app role + database:
+      APP_DB: ${POSTGRES_DB:-velocitype}
+      APP_USER: ${POSTGRES_APP_USER:-velocitype_app}
+      APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [velocitype_net]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks: [velocitype_net]
+
+  # Local LLM server for coaching. Runs entirely on this host — no external API.
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks: [velocitype_net]
+    # GPU (optional): uncomment if the host has an NVIDIA GPU + container toolkit.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # One-shot: pull the coaching model into the ollama volume, then exit. Runs in
+  # the background of `up`; the first pull downloads several GB. Coaching degrades
+  # gracefully (deterministic fallback / 503) until the model is ready.
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}
+    entrypoint: ["/bin/sh", "-c", "ollama pull \"$${OLLAMA_MODEL}\""]
+    restart: "no"
+    networks: [velocitype_net]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  redis_data:
+  ollama_data:
+
+networks:
+  velocitype_net:
+    driver: bridge
+
+secrets:
+  jwt_private:
+    file: ./secrets/jwt_private.pem
+  jwt_public:
+    file: ./secrets/jwt_public.pem

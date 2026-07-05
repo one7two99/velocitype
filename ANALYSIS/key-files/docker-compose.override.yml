@@ -1,0 +1,32 @@
+# Development overrides — applied automatically by `docker compose up`.
+# Exposes db/redis to the host and the API directly on :8000 for local work,
+# and enables uvicorn hot-reload against the mounted source tree.
+services:
+  api:
+    ports:
+      - "8000:8000"
+    environment:
+      ENV: development
+      COOKIE_SECURE: "false"
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./backend/alembic:/app/alembic:ro
+    command: >
+      sh -c "python -m app.db.wait_for_db &&
+             alembic upgrade head &&
+             python -m app.db.seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  # Caddy still runs in dev and proxies /api -> api:8000; the SPA slot (/srv) is
+  # empty until the frontend is built, which is expected at the backend-only stage.
+  caddy:
+    environment:
+      SITE_ADDRESS: ":80"
