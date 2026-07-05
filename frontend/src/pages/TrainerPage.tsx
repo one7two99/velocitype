@@ -17,6 +17,7 @@ export function TrainerPage() {
   const { layoutId, goal, durationS, wordCount, targetWpm } = useSettings();
   const drillActive = useCoachStore((s) => s.drillActive);
   const focusKeys = useCoachStore((s) => s.focusKeys);
+  const focusBigrams = useCoachStore((s) => s.focusBigrams);
   const stopDrills = useCoachStore((s) => s.stopDrills);
   const qc = useQueryClient();
 
@@ -63,7 +64,7 @@ export function TrainerPage() {
               drill = "";
             }
           }
-          if (!drill) drill = (await coachApi.drill(layoutId, focusKeys)).lesson;
+          if (!drill) drill = (await coachApi.drill(layoutId, focusKeys, focusBigrams)).lesson;
           text = drill;
           resp = await sessionsApi.start({
             layout_id: layoutId,
@@ -71,7 +72,9 @@ export function TrainerPage() {
             custom_text: drill,
           });
           // Kick off generation of the next drill for a smooth "Next Lesson".
-          nextDrillRef.current = coachApi.drill(layoutId, focusKeys).then((r) => r.lesson);
+          nextDrillRef.current = coachApi
+            .drill(layoutId, focusKeys, focusBigrams)
+            .then((r) => r.lesson);
         } else {
           resp = await sessionsApi.start({
             layout_id: layoutId,
@@ -92,16 +95,16 @@ export function TrainerPage() {
         setPhase("error");
       }
     },
-    [layoutId, goal, durationS, wordCount, targetWpm, drillActive, focusKeys],
+    [layoutId, goal, durationS, wordCount, targetWpm, drillActive, focusKeys, focusBigrams],
   );
 
   // (Re)start when layout/goal/target change or when drill mode / focus changes.
   useEffect(() => {
-    // Focus keys changed → discard any drill prefetched for the old focus.
+    // Focus changed → discard any drill prefetched for the old focus.
     nextDrillRef.current = null;
     startSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layoutId, goal, durationS, wordCount, targetWpm, drillActive, focusKeys]);
+  }, [layoutId, goal, durationS, wordCount, targetWpm, drillActive, focusKeys, focusBigrams]);
 
   const handleComplete = useCallback(
     async (r: EngineResult) => {
@@ -173,9 +176,11 @@ export function TrainerPage() {
         <div className="tf-drill-banner">
           <span>
             🎯 Coach drills —{" "}
-            {focusKeys.length
-              ? `targeting: ${focusKeys.map((k) => (k === " " ? "␣" : k)).join(" ")}`
-              : "targeting your weak keys"}
+            {focusBigrams.length
+              ? `targeting pairs: ${focusBigrams.join(" ")}`
+              : focusKeys.length
+                ? `targeting: ${focusKeys.map((k) => (k === " " ? "␣" : k)).join(" ")}`
+                : "targeting your weak keys"}
           </span>
           <button className="tf-drill-banner-btn" onClick={() => stopDrills()}>
             Switch to adaptive

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { statsApi } from "../api/endpoints";
 import type { KeyHeatCell } from "../api/types";
+import { BigramBreakdown } from "../components/BigramBreakdown";
 import { Button, Card, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useCoachStore } from "../stores/coachStore";
@@ -301,6 +302,8 @@ export function AnalysisPage() {
           </div>
         )}
       </Card>
+
+      <BigramBreakdown />
     </div>
   );
 }

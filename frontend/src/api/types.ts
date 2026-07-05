@@ -110,6 +110,40 @@ export interface KeyHeatmap {
   keys: KeyHeatCell[];
 }
 
+export interface NgramRow {
+  ngram: string;
+  cls: string | null; // BigramClass value (SFB / ROLL_IN / …)
+  attempts: number;
+  errors: number;
+  error_rate: number;
+  avg_latency_ms: number | null;
+  wpm: number | null;
+  consistency: number | null;
+  hitch_rate: number | null;
+  latency_n: number;
+}
+
+export interface NgramTable {
+  layout_id: string;
+  ngrams: NgramRow[];
+}
+
+export interface WeakBigram {
+  bigram: string;
+  class: string | null;
+  err_pct: number;
+  wpm?: number;
+  consistency?: number;
+  hitch_pct?: number;
+}
+
+export interface TrigramRollup {
+  redirect_pct: number;
+  sfb_chain_pct: number;
+  worst_redirect: string | null;
+  worst_sfb_chain: string | null;
+}
+
 export interface NextLessonResponse {
   layout_id: string;
   lesson: string;
@@ -235,6 +269,8 @@ export interface CoachMetrics {
   weak_keys: { char: string; error_rate: number; avg_latency_ms: number | null }[];
   trend_7d: { wpm: number[]; accuracy: number[] };
   coach_prompt: string;
+  weak_bigrams?: WeakBigram[];
+  trigram_rollup?: TrigramRollup | null;
 }
 
 // RFC 7807 problem+json
