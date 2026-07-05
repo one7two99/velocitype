@@ -15,6 +15,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.31.3",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "Recent Sessions on the dashboard no longer shows rows with blank WPM/accuracy — only completed sessions (which carry metrics) are listed.",
+      ],
+      changed: [
+        "Abandoned, never-typed sessions are cleaned up automatically when you start a new one, so opening the Trainer or tweaking settings no longer leaves empty sessions in your history.",
+      ],
+    },
+  },
+  {
     version: "0.31.2",
     date: "2026-07-05",
     sections: {

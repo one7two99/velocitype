@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import delete, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -61,6 +61,20 @@ async def start_session(
             status_code=422, title="Unprocessable Entity",
             detail=f"Unknown layout '{payload.layout_id}'.", type_="about:unknown-layout",
         )
+
+    # Sweep this user's abandoned, never-typed sessions before opening a new one.
+    # A session row is created here at start but only gets metrics at complete, so
+    # aborted starts (changing settings, opening the Trainer and leaving) would
+    # otherwise pile up as null-metric rows in history. Only rows that were never
+    # completed AND never received a keystroke are removed; genuine partial
+    # attempts (with keystrokes) are kept.
+    await db.execute(
+        delete(TypingSession).where(
+            TypingSession.user_id == user.id,
+            TypingSession.completed_at.is_(None),
+            ~exists().where(Keystroke.session_id == TypingSession.id),
+        )
+    )
 
     session = TypingSession(
         user_id=user.id,
@@ -161,12 +175,20 @@ async def session_history(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
 ) -> SessionHistory:
+    # Only completed sessions carry metrics; incomplete/abandoned rows would show
+    # as blank WPM/accuracy in the dashboard's "Recent Sessions", so exclude them.
     total = await db.scalar(
-        select(func.count(TypingSession.id)).where(TypingSession.user_id == user.id)
+        select(func.count(TypingSession.id)).where(
+            TypingSession.user_id == user.id,
+            TypingSession.completed_at.is_not(None),
+        )
     )
     result = await db.execute(
         select(TypingSession)
-        .where(TypingSession.user_id == user.id)
+        .where(
+            TypingSession.user_id == user.id,
+            TypingSession.completed_at.is_not(None),
+        )
         .order_by(TypingSession.started_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
