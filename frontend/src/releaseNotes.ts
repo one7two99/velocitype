@@ -15,6 +15,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.14.0",
+    date: "2026-07-05",
+    sections: {
+      changed: [
+        "Account menu: your name in the top-right corner now opens a dropdown with Profile, Settings and Log out.",
+        "The main navigation is slimmer (Trainer, Dashboard, Analysis, Coach) — Profile and Settings moved into the user menu.",
+      ],
+    },
+  },
+  {
     version: "0.13.0",
     date: "2026-07-05",
     sections: {
