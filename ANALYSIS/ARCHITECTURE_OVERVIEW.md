@@ -92,4 +92,4 @@ All under `/api`; session auth via httpOnly cookies unless noted. Prefixes from 
   - **Mistral model choice is UI-curated** to two entries (`mistral-small-latest` → "Mistral Small 4", `mistral-medium-latest` → "Mistral Medium 3.5") in `frontend/src/components/AiProvider.tsx`; the `-latest` aliases resolve to those versions currently.
   - **CSP** in `caddy/Caddyfile` is intentionally strict/self-only ("loosen as the frontend's asset needs are known").
   - **Session `mode` comment** in `models/session.py` lists `adaptive|fixed_text|custom` but `coach_drill` is also used in practice.
-  - The **git repository/remote is still named `adi-infra/typeforge`** although the product was rebranded to Velocitype; CHANGELOG compare-URLs point there intentionally.
+  - The project was migrated to **`one7two99/velocitype`** (default branch `main`); CHANGELOG compare-URLs point there. It was previously hosted at `adi-infra/typeforge`.
