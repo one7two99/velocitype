@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.19.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "WPM slider on the Analysis page: drag a target speed to see which keys already reach it (green) and which don't (red), with a live count.",
+      ],
+    },
+  },
+  {
     version: "0.18.0",
     date: "2026-07-05",
     sections: {

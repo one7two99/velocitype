@@ -38,6 +38,18 @@
   padding: 0.5rem 0;
 }
 
+.tf-analysis-slider {
+  margin-bottom: 0.9rem;
+}
+.tf-analysis-slider label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.tf-analysis-slider label b { color: var(--accent); }
+.tf-analysis-slider .tf-range-value { min-width: 4ch; }
+
 .tf-heat-legend {
   display: flex;
   align-items: center;

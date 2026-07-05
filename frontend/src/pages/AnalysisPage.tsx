@@ -1,16 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { lessonsApi, statsApi } from "../api/endpoints";
 import { FerrisHeatmap } from "../components/FerrisHeatmap/FerrisHeatmap";
 import { Card, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings } from "../stores/settingsStore";
 import "./dashboard.css";
+import "./settings.css";
 
 export function AnalysisPage() {
   useNavHotkeys();
   const layoutId = useSettings((s) => s.layoutId);
   const targetWpm = useSettings((s) => s.targetWpm);
+  // Local, explorable WPM threshold for the Speed heatmap (starts at the target).
+  const [threshold, setThreshold] = useState(targetWpm);
 
   const heat = useQuery({
     queryKey: ["stats", "keys", layoutId],
@@ -38,6 +41,12 @@ export function AnalysisPage() {
 
   const cells = heat.data?.keys ?? [];
 
+  // How many measured keys reach the chosen WPM threshold.
+  const measured = cells.filter((k) => k.attempts >= 5 && k.avg_latency_ms);
+  const reached = measured.filter(
+    (k) => 12000 / (k.avg_latency_ms as number) >= threshold,
+  ).length;
+
   return (
     <div className="tf-dash">
       <Card>
@@ -56,19 +65,39 @@ export function AnalysisPage() {
 
       <Card>
         <h3 className="tf-card-title">Key Heatmap — Speed</h3>
+        <div className="tf-analysis-slider">
+          <label htmlFor="tf-wpm-threshold">
+            Show keys reaching <b className="mono">{threshold}</b> WPM
+          </label>
+          <div className="tf-range-row">
+            <input
+              id="tf-wpm-threshold"
+              type="range"
+              className="tf-range"
+              min={20}
+              max={150}
+              step={5}
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+            />
+            <span className="tf-range-value mono">
+              {reached}/{measured.length}
+            </span>
+          </div>
+        </div>
         <div className="tf-heatmap-center">
           {layoutInfo && (
             <FerrisHeatmap
               layout={layoutInfo}
               cells={cells}
               metric="speed"
-              target={targetWpm}
+              target={threshold}
             />
           )}
         </div>
         <p className="tf-heat-legend">
-          <span className="tf-heat-swatch tf-heat-swatch--good" /> at/above target
-          ({targetWpm} WPM){"   "}
+          <span className="tf-heat-swatch tf-heat-swatch--good" /> at/above{" "}
+          {threshold} WPM{"   "}
           <span className="tf-heat-swatch tf-heat-swatch--bad" /> slower
         </p>
       </Card>
