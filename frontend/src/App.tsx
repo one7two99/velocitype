@@ -7,6 +7,7 @@ import { AnalysisPage } from "./pages/AnalysisPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CoachPage } from "./pages/CoachPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { HeatmapsPage } from "./pages/HeatmapsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TrainerPage } from "./pages/TrainerPage";
@@ -70,6 +71,14 @@ export default function App() {
         element={
           <Protected>
             <AnalysisPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/heatmaps"
+        element={
+          <Protected>
+            <HeatmapsPage />
           </Protected>
         }
       />

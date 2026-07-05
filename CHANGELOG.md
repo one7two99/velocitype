@@ -9,6 +9,19 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-07-05
+
+### Added
+- **Per-key breakdown on Analysis.** The Analysis page now shows a sortable,
+  searchable table with one row per key — hand, finger, attempts, errors,
+  error %, WPM (from latency), average latency, consistency %, and a status
+  verdict (on-target / slow / error-prone / needs data). Sort by any column,
+  search for a key, or filter to only the keys that need work.
+
+### Changed
+- The three key heatmaps (Accuracy / Speed / Consistency) moved to a dedicated
+  **Heatmaps** menu item; Analysis is now the per-key table.
+
 ## [0.24.0] - 2026-07-05
 
 ### Added
@@ -320,7 +333,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/adi-infra/typeforge/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/adi-infra/typeforge/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/adi-infra/typeforge/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/adi-infra/typeforge/compare/v0.21.0...v0.22.0

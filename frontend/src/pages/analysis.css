@@ -1,0 +1,97 @@
+.tf-analysis-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.tf-analysis-summary {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.tf-keytable-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.75rem 0 1rem;
+  flex-wrap: wrap;
+}
+.tf-keytable-search {
+  max-width: 220px;
+}
+.tf-keytable-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tf-keytable-wrap {
+  overflow-x: auto;
+}
+.tf-keytable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.tf-keytable th,
+.tf-keytable td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.tf-keytable th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+}
+.tf-keytable th:hover {
+  color: var(--text-primary);
+}
+.tf-keytable th.tf-sorted {
+  color: var(--accent);
+}
+.tf-keytable td {
+  border-bottom: 1px solid var(--border);
+}
+.tf-keytable tbody tr:hover {
+  background: var(--bg-surface);
+}
+.tf-keytable .tf-num {
+  text-align: right;
+}
+.tf-sort-caret {
+  font-size: 0.7rem;
+}
+
+.tf-key-cell {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tf-status {
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tf-status--on-target {
+  color: var(--correct);
+}
+.tf-status--slow {
+  color: var(--accent);
+}
+.tf-status--error-prone {
+  color: var(--heat-max);
+}
+.tf-status--needs-data {
+  color: var(--text-muted);
+}
