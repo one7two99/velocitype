@@ -42,6 +42,8 @@ export const authApi = {
     api.patch<User>("/api/auth/email", { password, email }),
   deleteAccount: (password: string) =>
     api.del<void>("/api/auth/me", { password }),
+  resetData: (password: string) =>
+    api.post<{ detail: string }>("/api/auth/me/reset", { password }),
 };
 
 export const sessionsApi = {

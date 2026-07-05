@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { authApi } from "../api/endpoints";
 import { useAuth, useClearAuth } from "../hooks/useAuth";
+import { useCoachStore } from "../stores/coachStore";
 import { Alert, Button, Card, Field, Input } from "./ui";
 import "./account.css";
 
@@ -43,6 +44,20 @@ export function AccountSection() {
       setEmail("");
       setEmailPw("");
       qc.invalidateQueries({ queryKey: ["me"] });
+    },
+  });
+
+  // Reset all data (keep the account)
+  const stopDrills = useCoachStore((s) => s.stopDrills);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetPw, setResetPw] = useState("");
+  const resetData = useMutation({
+    mutationFn: () => authApi.resetData(resetPw),
+    onSuccess: () => {
+      setConfirmReset(false);
+      setResetPw("");
+      stopDrills();
+      qc.invalidateQueries(); // refetch stats/coach/ngrams/sessions → fresh profile
     },
   });
 
@@ -143,6 +158,63 @@ export function AccountSection() {
           Update email
         </Button>
       </form>
+
+      {/* Reset all data */}
+      <div className="tf-account-danger">
+        <h4 className="tf-account-h">Delete all data</h4>
+        <p className="tf-settings-note">
+          Permanently deletes all your metrics (sessions, keystrokes, per-key and
+          bigram stats) and your AI settings, including any stored Mistral API key.
+          Your account and login are kept — you start fresh with empty stats. This
+          cannot be undone.
+        </p>
+        {resetData.isError && <Alert>{errMessage(resetData.error)}</Alert>}
+        {resetData.isSuccess && (
+          <div className="tf-account-ok">All your data has been deleted.</div>
+        )}
+        {!confirmReset ? (
+          <Button variant="danger" onClick={() => setConfirmReset(true)}>
+            Delete all data…
+          </Button>
+        ) : (
+          <form
+            className="tf-account-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              resetData.mutate();
+            }}
+          >
+            <Field label="Confirm with password">
+              <Input
+                type="password"
+                value={resetPw}
+                autoComplete="current-password"
+                onChange={(e) => setResetPw(e.target.value)}
+                required
+              />
+            </Field>
+            <div className="tf-account-danger-actions">
+              <Button
+                variant="danger"
+                type="submit"
+                disabled={resetData.isPending || !resetPw}
+              >
+                Delete all my data
+              </Button>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  setConfirmReset(false);
+                  setResetPw("");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* Delete account */}
       <div className="tf-account-danger">
