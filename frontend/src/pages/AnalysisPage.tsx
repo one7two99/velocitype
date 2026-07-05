@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { statsApi } from "../api/endpoints";
 import type { KeyHeatCell } from "../api/types";
-import { Card, Spinner } from "../components/ui";
+import { Button, Card, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
+import { useCoachStore } from "../stores/coachStore";
 import { useSettings } from "../stores/settingsStore";
 import "./dashboard.css";
 import "./analysis.css";
@@ -95,10 +97,25 @@ export function AnalysisPage() {
     queryFn: () => statsApi.keys(layoutId),
   });
 
+  const startDrills = useCoachStore((s) => s.startDrills);
+  const navigate = useNavigate();
+
   const [sortKey, setSortKey] = useState<SortKey>("errPct");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
   const [onlyWork, setOnlyWork] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Pre-select the keys that need work whenever fresh data arrives.
+  useEffect(() => {
+    if (!heat.data) return;
+    const needWork = (heat.data.keys ?? [])
+      .filter((c) => c.attempts > 0)
+      .map((c) => toRow(c, targetWpm))
+      .filter((r) => r.status === "error-prone" || r.status === "slow")
+      .map((r) => r.char);
+    setSelected(new Set(needWork));
+  }, [heat.data, targetWpm]);
 
   const rows = useMemo(() => {
     const all = (heat.data?.keys ?? [])
@@ -156,6 +173,27 @@ export function AnalysisPage() {
   const fmtNum = (v: number | null, digits = 0) =>
     v == null ? "—" : v.toFixed(digits);
 
+  const toggle = (c: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      n.has(c) ? n.delete(c) : n.add(c);
+      return n;
+    });
+  const allVisibleSelected = rows.length > 0 && rows.every((r) => selected.has(r.char));
+  const toggleAll = () =>
+    setSelected((s) => {
+      const n = new Set(s);
+      if (allVisibleSelected) rows.forEach((r) => n.delete(r.char));
+      else rows.forEach((r) => n.add(r.char));
+      return n;
+    });
+  const generateDrill = () => {
+    if (selected.size) {
+      startDrills(Array.from(selected));
+      navigate("/");
+    }
+  };
+
   return (
     <div className="tf-dash">
       <Card>
@@ -182,6 +220,14 @@ export function AnalysisPage() {
             />
             only keys needing work
           </label>
+          <Button
+            variant="primary"
+            className="tf-drill-btn"
+            disabled={selected.size === 0}
+            onClick={generateDrill}
+          >
+            Generate drill from {selected.size} key{selected.size === 1 ? "" : "s"}
+          </Button>
         </div>
 
         {rows.length === 0 ? (
@@ -195,6 +241,14 @@ export function AnalysisPage() {
             <table className="tf-keytable">
               <thead>
                 <tr>
+                  <th className="tf-check-col">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all"
+                      checked={allVisibleSelected}
+                      onChange={toggleAll}
+                    />
+                  </th>
                   {COLUMNS.map((col) => (
                     <th
                       key={col.key}
@@ -215,7 +269,15 @@ export function AnalysisPage() {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.char}>
+                  <tr key={r.char} className={selected.has(r.char) ? "tf-row-sel" : ""}>
+                    <td className="tf-check-col">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${r.char}`}
+                        checked={selected.has(r.char)}
+                        onChange={() => toggle(r.char)}
+                      />
+                    </td>
                     <td className="mono tf-key-cell">{disp(r.char)}</td>
                     <td>{r.hand ?? "—"}</td>
                     <td>{r.finger ?? "—"}</td>

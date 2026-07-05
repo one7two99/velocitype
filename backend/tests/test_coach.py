@@ -145,6 +145,38 @@ async def test_drill_reverifies_focus_and_falls_back(client, unique_user, monkey
     assert "q" in body["lesson"]
 
 
+async def test_drill_with_explicit_focus_keys(client, unique_user, monkeypatch):
+    """Focus keys picked in the Analysis table drive the drill (not auto-weakest)."""
+    await _register(client, unique_user)
+    captured = {}
+
+    async def capture(prompt, system=None, *, model=None, num_predict=300):
+        captured["prompt"] = prompt
+        return "the zebra jazz quiz " * 8  # contains z, j, q
+
+    monkeypatch.setattr(ollama, "generate", capture)
+    resp = await client.post("/api/coach/drill", json={"focus_keys": ["z", "j", "q"]})
+    assert resp.status_code == 200
+    # The requested keys are what the model was asked to over-represent.
+    assert "z" in captured["prompt"] and "j" in captured["prompt"] and "q" in captured["prompt"]
+    body = resp.json()
+    assert {w["char"] for w in body["weak_keys"]} == {"z", "j", "q"}
+
+
+async def test_drill_ignores_untypeable_focus_keys(client, unique_user, monkeypatch):
+    """Invalid focus keys are dropped; with none left it falls back to auto."""
+    await _register(client, unique_user)
+
+    async def fake_generate(prompt, system=None, *, model=None, num_predict=300):
+        return "the quick brown fox jumps over the lazy dog " * 6
+
+    monkeypatch.setattr(ollama, "generate", fake_generate)
+    # "5", "@" are not typeable keys on the layout → ignored → auto selection.
+    resp = await client.post("/api/coach/drill", json={"focus_keys": ["5", "@"]})
+    assert resp.status_code == 200
+    assert resp.json()["word_count"] >= 20
+
+
 async def test_coach_metrics(client, unique_user):
     await _register(client, unique_user)
     resp = await client.get("/api/coach/metrics")

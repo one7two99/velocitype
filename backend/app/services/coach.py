@@ -171,11 +171,52 @@ def _sanitize_lesson(raw: str, allowed_letters: set[str], min_words: int) -> str
     return " ".join(words[:120])
 
 
+def _focus_from_keys(
+    focus_keys: list[str], layout, metrics
+) -> tuple[list[str], list[WeakKeyInfo]]:
+    """Validate user-picked focus keys against the layout and build weak-key info
+    from the user's own metrics for those keys."""
+    typeable = {c for c in layout.characters if len(c) == 1}
+    chars = [c for c in dict.fromkeys(focus_keys) if c in typeable][:8]
+    mmap = {m.character: m for m in metrics}
+    info: list[WeakKeyInfo] = []
+    for c in chars:
+        m = mmap.get(c)
+        er = (m.errors / m.attempts) if m and m.attempts else 0.0
+        info.append(
+            WeakKeyInfo(
+                char=c,
+                error_rate=round(er, 4),
+                avg_latency_ms=m.avg_latency_ms if m else None,
+            )
+        )
+    return chars, info
+
+
+def _annotate_focus(chars: list[str], metrics) -> str:
+    """Render the focus keys with per-key severity so the LLM can prioritise."""
+    mmap = {m.character: m for m in metrics}
+    parts: list[str] = []
+    for c in chars:
+        m = mmap.get(c)
+        if m and m.attempts:
+            note = f"{round(100 * m.errors / m.attempts)}% errors"
+            if m.avg_latency_ms:
+                note += f", ~{round(12000 / m.avg_latency_ms)} wpm"
+            parts.append(f"{c} ({note})")
+        else:
+            parts.append(c)
+    return ", ".join(parts)
+
+
 async def drill(
-    db: AsyncSession, user: User, layout_id: str
+    db: AsyncSession, user: User, layout_id: str, focus_keys: list[str] | None = None
 ) -> tuple[str, list[WeakKeyInfo], str, str]:
     """Generate a drill lesson via the LLM. Returns (lesson, weak_keys, source,
-    model) where source is the provider name or 'fallback'."""
+    model) where source is the provider name or 'fallback'.
+
+    ``focus_keys`` (from the per-key Analysis) overrides the automatic weakest-key
+    selection when it contains valid, typeable keys."""
     layout = get_layout(layout_id)
     if layout is None:
         raise ValueError(f"unknown layout '{layout_id}'")
@@ -183,13 +224,18 @@ async def drill(
     cfg = await get_ai_config(db, user.id)
 
     metrics = await build_key_metrics(db, user.id, layout_id)
-    scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
-    weak_scored = [s for s in scored if s.score > 0.0]
-    weak_chars = [s.character for s in weak_scored]
-    weak_info = _weak_info(metrics, weak_scored)
+
+    picked = _focus_from_keys(focus_keys, layout, metrics) if focus_keys else ([], [])
+    if picked[0]:
+        weak_chars, weak_info = picked
+    else:
+        scored = adaptive.weakest_keys(metrics, n=5) if metrics else []
+        weak_scored = [s for s in scored if s.score > 0.0]
+        weak_chars = [s.character for s in weak_scored]
+        weak_info = _weak_info(metrics, weak_scored)
 
     allowed_letters = {c for c in layout.characters if c.isalpha()}
-    focus = ", ".join(weak_chars) if weak_chars else "a balanced mix of all keys"
+    focus = _annotate_focus(weak_chars, metrics) if weak_chars else "a balanced mix of all keys"
 
     prompts = await get_effective_prompts(db, user.id)
     prompt = _inject(prompts["drill_user"], "{{focus}}", focus)
