@@ -21,6 +21,7 @@ import type {
   SessionHistory,
   SessionMode,
   SessionStartResponse,
+  SessionStatSeries,
   StatsOverview,
   UnlockState,
   User,
@@ -90,6 +91,8 @@ export const statsApi = {
     api.get<KeyHeatmap>(`/api/stats/keys?layout_id=${layoutId}`),
   ngrams: (layoutId: string) =>
     api.get<NgramTable>(`/api/stats/ngrams?layout_id=${layoutId}`),
+  sessions: (layoutId: string) =>
+    api.get<SessionStatSeries>(`/api/stats/sessions?layout_id=${layoutId}`),
 };
 
 export const settingsApi = {

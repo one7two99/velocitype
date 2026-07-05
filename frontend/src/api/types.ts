@@ -90,6 +90,20 @@ export interface TopError {
   attempts: number;
 }
 
+export interface SessionStatPoint {
+  index: number;
+  started_at: string;
+  distinct_keys: number;
+  avg_wpm: number | null;
+  max_wpm: number | null;
+  accuracy: number | null;
+}
+
+export interface SessionStatSeries {
+  layout_id: string;
+  points: SessionStatPoint[];
+}
+
 export interface StatsOverview {
   layout_id: string;
   total_sessions: number;

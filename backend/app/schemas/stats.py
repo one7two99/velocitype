@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -70,3 +70,17 @@ class ProgressSeries(BaseModel):
     layout_id: str
     days: int
     points: list[TrendPoint]
+
+
+class SessionStatPoint(BaseModel):
+    index: int                      # 1-based chronological position
+    started_at: datetime
+    distinct_keys: int              # distinct (non-space) characters typed
+    avg_wpm: float | None           # mean rolling-window speed within the session
+    max_wpm: float | None           # peak rolling-window speed within the session
+    accuracy: float | None
+
+
+class SessionStatSeries(BaseModel):
+    layout_id: str
+    points: list[SessionStatPoint]

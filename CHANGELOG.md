@@ -9,6 +9,15 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-07-05
+
+### Added
+- Dashboard: an **All Completed Sessions** chart above the 30-day trend, plotting
+  every completed session (that has keystrokes) with **distinct keys** (bars),
+  **average** and **peak WPM** (computed intra-session from keystroke timings via
+  a rolling window), and **accuracy**. Backed by a new `GET /api/stats/sessions`
+  endpoint.
+
 ## [0.31.3] - 2026-07-05
 
 ### Fixed
@@ -484,7 +493,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/one7two99/velocitype/compare/v0.31.3...HEAD
+[Unreleased]: https://github.com/one7two99/velocitype/compare/v0.32.0...HEAD
+[0.32.0]: https://github.com/one7two99/velocitype/compare/v0.31.3...v0.32.0
 [0.31.3]: https://github.com/one7two99/velocitype/compare/v0.31.2...v0.31.3
 [0.31.2]: https://github.com/one7two99/velocitype/compare/v0.31.1...v0.31.2
 [0.31.1]: https://github.com/one7two99/velocitype/compare/v0.31.0...v0.31.1

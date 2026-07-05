@@ -239,3 +239,39 @@ async def test_start_sweeps_abandoned_untyped_sessions(client, unique_user):
     )
     await client.post("/api/sessions/start", json=j)      # creates D; C (typed) survives
     assert await _session_row_count(unique_user["username"]) == 2
+
+
+async def test_session_series_reports_keys_speed_accuracy(client, unique_user):
+    await _register(client, unique_user)
+    start = await client.post(
+        "/api/sessions/start",
+        json={"layout_id": DEFAULT_LAYOUT_ID, "mode": "adaptive", "duration_s": 30},
+    )
+    session_id = start.json()["session_id"]
+    # 6 keystrokes over 4 distinct keys ("t","h","e"," " excluded), steady 100ms.
+    ks = [
+        {"ts_offset_ms": 0, "expected_char": "t", "actual_char": "t", "correct": True},
+        {"ts_offset_ms": 100, "expected_char": "h", "actual_char": "h", "correct": True},
+        {"ts_offset_ms": 200, "expected_char": "e", "actual_char": "e", "correct": True},
+        {"ts_offset_ms": 300, "expected_char": " ", "actual_char": " ", "correct": True},
+        {"ts_offset_ms": 400, "expected_char": "t", "actual_char": "t", "correct": True},
+        {"ts_offset_ms": 500, "expected_char": "o", "actual_char": "o", "correct": True},
+    ]
+    await client.post(f"/api/sessions/{session_id}/keystrokes", json={"keystrokes": ks})
+    await client.post(
+        f"/api/sessions/{session_id}/complete",
+        json={"wpm_raw": 60, "wpm_net": 58, "accuracy": 0.97, "consistency": 0.95},
+    )
+
+    resp = await client.get(f"/api/stats/sessions?layout_id={DEFAULT_LAYOUT_ID}")
+    assert resp.status_code == 200
+    points = resp.json()["points"]
+    assert len(points) == 1
+    p = points[0]
+    assert p["index"] == 1
+    assert p["distinct_keys"] == 4          # {t,h,e,o}; space excluded, t repeats
+    assert p["accuracy"] == pytest.approx(0.97, abs=1e-4)
+    # Steady 100ms spacing → ~120 WPM (12000/100); avg and max both present.
+    assert p["avg_wpm"] is not None and p["max_wpm"] is not None
+    assert p["avg_wpm"] == pytest.approx(120.0, abs=1.0)
+    assert p["max_wpm"] >= p["avg_wpm"]

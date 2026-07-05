@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { sessionsApi, statsApi } from "../api/endpoints";
 import type { TrendPoint } from "../api/types";
-import { TrendChart } from "../components/Charts";
+import { SessionsChart, TrendChart } from "../components/Charts";
 import { Card, Spinner } from "../components/ui";
 import { useNavHotkeys } from "../hooks/useNavHotkeys";
 import { useSettings } from "../stores/settingsStore";
@@ -31,6 +31,10 @@ export function DashboardPage() {
   const history = useQuery({
     queryKey: ["sessions", "history"],
     queryFn: () => sessionsApi.history(1, 10),
+  });
+  const sessionSeries = useQuery({
+    queryKey: ["stats", "sessions", layoutId],
+    queryFn: () => statsApi.sessions(layoutId),
   });
 
   const trend: TrendPoint[] = useMemo(() => {
@@ -84,6 +88,14 @@ export function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <h3 className="tf-card-title">All Completed Sessions</h3>
+        <SessionsChart
+          points={sessionSeries.data?.points ?? []}
+          target={targetWpm}
+        />
+      </Card>
 
       <div className="tf-dash-grid">
         <Card>
