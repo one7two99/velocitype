@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.28.2",
+    date: "2026-07-05",
+    sections: {
+      fixed: [
+        "Generating a drill from many selected keys or bigrams in Analysis no longer fails with a validation error (the selection limit was too low).",
+      ],
+    },
+  },
+  {
     version: "0.28.1",
     date: "2026-07-05",
     sections: {
