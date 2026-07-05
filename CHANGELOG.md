@@ -9,6 +9,21 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-07-05
+
+### Added
+- **Targeted drills from the per-key Analysis.** Each row in the per-key table now
+  has a checkbox (keys "needing work" are pre-selected); a **Generate drill from N
+  keys** button sends exactly those keys to the active LLM (Ollama or Mistral),
+  which builds a word list focused on them, and starts a coach-drill session. The
+  Trainer banner shows which keys are being targeted.
+- The drill prompt now includes per-key severity (error % and approx WPM) for the
+  focus keys so the model can prioritise.
+
+### Changed
+- `POST /api/coach/drill` accepts an optional `focus_keys` list; without it the
+  adaptive engine still picks the weakest keys automatically (unchanged default).
+
 ## [0.25.0] - 2026-07-05
 
 ### Added
@@ -333,7 +348,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.25.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.26.0...HEAD
+[0.26.0]: https://github.com/adi-infra/typeforge/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/adi-infra/typeforge/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/adi-infra/typeforge/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/adi-infra/typeforge/compare/v0.22.0...v0.23.0

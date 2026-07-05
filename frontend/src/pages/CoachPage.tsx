@@ -24,7 +24,8 @@ export function CoachPage() {
   useNavHotkeys();
   const layoutId = useSettings((s) => s.layoutId);
   const drillActive = useCoachStore((s) => s.drillActive);
-  const setDrillActive = useCoachStore((s) => s.setDrillActive);
+  const startDrills = useCoachStore((s) => s.startDrills);
+  const stopDrills = useCoachStore((s) => s.stopDrills);
   const navigate = useNavigate();
 
   const status = useQuery({
@@ -150,7 +151,7 @@ export function CoachPage() {
             {drillActive ? (
               <>
                 <Button onClick={() => navigate("/")}>Go to Trainer</Button>
-                <Button variant="ghost" onClick={() => setDrillActive(false)}>
+                <Button variant="ghost" onClick={() => stopDrills()}>
                   Stop drills
                 </Button>
                 <span className="tf-coach-active mono">● drills active</span>
@@ -158,7 +159,7 @@ export function CoachPage() {
             ) : (
               <Button
                 onClick={() => {
-                  setDrillActive(true);
+                  startDrills([]);
                   navigate("/");
                 }}
               >

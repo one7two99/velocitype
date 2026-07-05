@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.26.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Generate a targeted drill straight from the per-key Analysis: tick the keys you want to practice (keys needing work are pre-selected) and hit 'Generate drill from N keys' — the active AI builds a word list focused on exactly those keys and starts a coach-drill session. The model also gets each key's error rate and speed so it can prioritise.",
+      ],
+    },
+  },
+  {
     version: "0.25.0",
     date: "2026-07-05",
     sections: {

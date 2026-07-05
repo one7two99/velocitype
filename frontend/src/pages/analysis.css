@@ -30,8 +30,19 @@
   cursor: pointer;
 }
 
+.tf-drill-btn {
+  margin-left: auto;
+}
+
 .tf-keytable-wrap {
   overflow-x: auto;
+}
+.tf-check-col {
+  width: 1.6rem;
+  text-align: center !important;
+}
+.tf-keytable tbody tr.tf-row-sel {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 .tf-keytable {
   width: 100%;

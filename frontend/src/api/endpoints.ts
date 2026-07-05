@@ -107,8 +107,11 @@ export const coachApi = {
     api.get<CoachMetrics>(`/api/coach/metrics?layout_id=${layoutId}`),
   analyze: (layoutId: string) =>
     api.post<CoachAnalysis>(`/api/coach/analyze?layout_id=${layoutId}`),
-  drill: (layoutId: string) =>
-    api.post<CoachDrill>(`/api/coach/drill?layout_id=${layoutId}`),
+  drill: (layoutId: string, focusKeys?: string[]) =>
+    api.post<CoachDrill>(
+      `/api/coach/drill?layout_id=${layoutId}`,
+      focusKeys && focusKeys.length ? { focus_keys: focusKeys } : undefined,
+    ),
   getPrompts: () => api.get<CoachPrompts>("/api/coach/prompts"),
   savePrompts: (custom: PromptCustom) =>
     api.put<CoachPrompts>("/api/coach/prompts", custom),

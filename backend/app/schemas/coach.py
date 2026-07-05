@@ -60,6 +60,12 @@ class ModelList(BaseModel):
     reachable: bool
 
 
+class DrillRequest(BaseModel):
+    # Optional explicit focus keys (from the per-key Analysis). Empty/None →
+    # the adaptive engine picks the weakest keys automatically.
+    focus_keys: list[str] | None = Field(default=None, max_length=12)
+
+
 class PullRequest(BaseModel):
     name: str = Field(min_length=1, max_length=128)
 

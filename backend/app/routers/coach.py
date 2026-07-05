@@ -28,6 +28,7 @@ from app.schemas.coach import (
     CoachPrompts,
     CoachPromptsUpdate,
     CoachStatus,
+    DrillRequest,
     ModelList,
     PromptCustom,
     PromptSet,
@@ -241,12 +242,16 @@ async def analyze(
 
 @router.post("/drill", response_model=CoachDrill)
 async def drill(
+    payload: DrillRequest | None = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
     layout_id: str = Query(default=DEFAULT_LAYOUT_ID, max_length=64),
 ) -> CoachDrill:
     _require_layout(layout_id)
-    lesson, weak_keys, source, model = await coach.drill(db, user, layout_id)
+    focus_keys = payload.focus_keys if payload else None
+    lesson, weak_keys, source, model = await coach.drill(
+        db, user, layout_id, focus_keys=focus_keys
+    )
     return CoachDrill(
         layout_id=layout_id,
         model=model,
