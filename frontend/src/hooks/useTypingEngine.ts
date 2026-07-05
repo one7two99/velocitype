@@ -21,7 +21,8 @@ export interface TypingView {
   errors: Set<string>; // "w:c"
   status: EngineStatus;
   shakeKey: string | null;
-  liveWpm: number;
+  liveWpm: number; // rolling 10s window
+  liveAvgWpm: number; // cumulative session average
   liveAccuracy: number; // 0..1
   elapsedMs: number;
   result: EngineResult | null;
@@ -128,6 +129,7 @@ export function useTypingEngine(
 
   const [state, setState] = useState<InternalState>(() => initial(words));
   const [liveWpm, setLiveWpm] = useState(0);
+  const [liveAvgWpm, setLiveAvgWpm] = useState(0);
   const [liveAccuracy, setLiveAccuracy] = useState(1);
   const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -144,6 +146,7 @@ export function useTypingEngine(
     errorWordsRef.current = new Set();
     tabArmedRef.current = false;
     setLiveWpm(0);
+    setLiveAvgWpm(0);
     setLiveAccuracy(1);
     setElapsedMs(0);
     setState(initial(words));
@@ -300,6 +303,8 @@ export function useTypingEngine(
         Math.min(now, LIVE_WINDOW_MS) / 1000 / 60 || 1 / 60;
       setLiveWpm(Math.round(recentCorrect / 5 / windowMin));
       const correct = ks.filter((k) => k.correct).length;
+      const avgMin = now / 60000;
+      setLiveAvgWpm(avgMin > 0 ? Math.round(correct / 5 / avgMin) : 0);
       setLiveAccuracy(ks.length ? correct / ks.length : 1);
     }, LIVE_TICK_MS);
     return () => clearInterval(id);
@@ -314,6 +319,7 @@ export function useTypingEngine(
     status: state.status,
     shakeKey: state.shakeKey,
     liveWpm,
+    liveAvgWpm,
     liveAccuracy,
     elapsedMs,
     result: state.result,
