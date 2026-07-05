@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "../api/client";
 import { coachApi, sessionsApi } from "../api/endpoints";
@@ -16,6 +17,7 @@ export function TrainerPage() {
   const { layoutId, goal, durationS, wordCount, targetWpm } = useSettings();
   const drillActive = useCoachStore((s) => s.drillActive);
   const setDrillActive = useCoachStore((s) => s.setDrillActive);
+  const qc = useQueryClient();
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -119,6 +121,9 @@ export function TrainerPage() {
           target_wpm: targetWpm,
         });
         setServerWeak(resp.weak_keys);
+        // Session is saved → refresh dashboard/analysis data (stats + history).
+        qc.invalidateQueries({ queryKey: ["stats"] });
+        qc.invalidateQueries({ queryKey: ["sessions"] });
       } catch (err) {
         setSaveError(
           err instanceof ApiError ? err.message : "Failed to save session.",
@@ -127,7 +132,7 @@ export function TrainerPage() {
         setSaving(false);
       }
     },
-    [sessionId, startWeak, targetWpm],
+    [sessionId, startWeak, targetWpm, qc],
   );
 
   if (phase === "loading") {

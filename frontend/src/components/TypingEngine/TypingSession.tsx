@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useTypingEngine, type EngineResult } from "../../hooks/useTypingEngine";
 import { PaceIndicator } from "./PaceIndicator";
 import { SessionProgressBar } from "./SessionProgressBar";
@@ -19,16 +18,9 @@ export function TypingSession({
   onComplete: (r: EngineResult) => void;
   durationMs?: number;
 }) {
-  const qc = useQueryClient();
-  const view = useTypingEngine(
-    lesson,
-    (r) => {
-      // Stats will have changed after this session is saved.
-      qc.invalidateQueries({ queryKey: ["stats"] });
-      onComplete(r);
-    },
-    { durationMs },
-  );
+  // The parent (TrainerPage) saves the session and then invalidates the relevant
+  // queries, so the dashboard/analysis refetch fresh data.
+  const view = useTypingEngine(lesson, onComplete, { durationMs });
 
   // Timed mode shows a countdown; otherwise elapsed time.
   const timeMs = durationMs ? durationMs - view.elapsedMs : view.elapsedMs;
