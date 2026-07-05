@@ -12,6 +12,18 @@ async def _register(client, user):
     assert resp.status_code == 201
 
 
+async def _full_keyboard(client):
+    """Disable progressive unlocking so drills may use the whole layout."""
+    s = (await client.get("/api/settings")).json()
+    keep = (
+        "theme", "layout_id", "goal", "duration_s", "word_count", "target_wpm",
+        "progressive_unlock", "unlock_threshold_pct", "unlock_window_sessions",
+    )
+    body = {k: s[k] for k in keep}
+    body["progressive_unlock"] = False
+    assert (await client.put("/api/settings", json=body)).status_code == 200
+
+
 async def test_analyze_uses_local_model(client, unique_user, monkeypatch):
     await _register(client, unique_user)
 
@@ -43,6 +55,7 @@ async def test_analyze_unavailable_returns_503(client, unique_user, monkeypatch)
 
 async def test_drill_from_ollama(client, unique_user, monkeypatch):
     await _register(client, unique_user)
+    await _full_keyboard(client)
 
     async def fake_generate(prompt, system=None, *, model=None, num_predict=300):
         return "the quick brown fox jumps over the lazy dog " * 6
@@ -117,6 +130,7 @@ def test_covers_focus():
 async def test_drill_reverifies_focus_and_falls_back(client, unique_user, monkeypatch):
     """A user with a weak key + an LLM that ignores it → deterministic fallback."""
     await _register(client, unique_user)
+    await _full_keyboard(client)
     # Build a weak 'q': type it wrong several times so it becomes a focus key.
     start = await client.post(
         "/api/sessions/start",
@@ -148,6 +162,7 @@ async def test_drill_reverifies_focus_and_falls_back(client, unique_user, monkey
 async def test_drill_with_explicit_focus_keys(client, unique_user, monkeypatch):
     """Focus keys picked in the Analysis table drive the drill (not auto-weakest)."""
     await _register(client, unique_user)
+    await _full_keyboard(client)
     captured = {}
 
     async def capture(prompt, system=None, *, model=None, num_predict=300):

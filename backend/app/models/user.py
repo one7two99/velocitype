@@ -35,3 +35,4 @@ class User(Base):
     prompts = relationship("UserPrompt", back_populates="user", uselist=False, cascade="all, delete-orphan")
     ai_config = relationship("UserAiConfig", back_populates="user", uselist=False, cascade="all, delete-orphan")
     settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    layout_progress = relationship("UserLayoutProgress", back_populates="user", cascade="all, delete-orphan")

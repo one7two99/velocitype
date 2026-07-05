@@ -11,13 +11,13 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.engine import adaptive
+from app.engine import adaptive, unlock
 from app.engine.adaptive import KeyMetric, ScoredKey
 from app.models.key_stat import KeyStat
 from app.models.keystroke import Keystroke
 from app.models.session import TypingSession
 from app.schemas.keystroke import KeystrokeIn
-from app.services import ngram_stats
+from app.services import ngram_stats, progress
 
 
 async def _user_session_seq(db: AsyncSession, user_id: uuid.UUID) -> int:
@@ -89,6 +89,10 @@ async def apply_keystrokes(
 
     seq = await _user_session_seq(db, session.user_id)
     agg = _per_key_aggregates(keystrokes)
+    # Settings drive the mastery threshold used to update each key's streak.
+    settings = await progress.get_user_settings(db, session.user_id)
+    target_wpm = settings["target_wpm"]
+    threshold_pct = settings["unlock_threshold_pct"]
 
     touched = 0
     for char, data in agg.items():
@@ -121,6 +125,15 @@ async def apply_keystrokes(
             stat.attempts += data["attempts"]
             stat.errors += data["errors"]
             stat.last_session_seq = seq
+
+        # Progressive-unlock mastery streak for this key (this session).
+        if data["lat_n"] >= unlock.MIN_SESSION_SAMPLES:
+            session_wpm = 12000.0 / (data["lat_sum"] / data["lat_n"])
+            session_err = (data["errors"] / data["attempts"]) if data["attempts"] else 0.0
+            if unlock.session_qualifies(session_wpm, session_err, data["lat_n"], target_wpm, threshold_pct):
+                stat.qualifying_streak = (stat.qualifying_streak or 0) + 1
+            else:
+                stat.qualifying_streak = 0
         touched += 1
 
     # Roll the same batch into bigram stats in this transaction (§4).

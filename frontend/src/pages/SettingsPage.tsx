@@ -35,6 +35,10 @@ export function SettingsPage() {
     mutationFn: (id: string) => mcpApi.revokeKey(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["apikeys"] }),
   });
+  const resetProgression = useMutation({
+    mutationFn: () => lessonsApi.resetProgression(s.layoutId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lessons", "unlock"] }),
+  });
 
   return (
     <div className="tf-settings">
@@ -136,6 +140,66 @@ export function SettingsPage() {
             "graduate" once they reach the target.
           </p>
         </Field>
+
+        <Field label="Progressive key unlocking">
+          <label className="tf-toggle-row">
+            <input
+              type="checkbox"
+              checked={s.progressiveUnlock}
+              onChange={(e) => s.setProgressiveUnlock(e.target.checked)}
+            />
+            Reveal keys one at a time as you master them (keybr-style)
+          </label>
+        </Field>
+
+        {s.progressiveUnlock && (
+          <>
+            <Field label={`Unlock threshold — ${s.unlockThresholdPct}% of target`}>
+              <div className="tf-range-row">
+                <input
+                  type="range"
+                  className="tf-range"
+                  min={50}
+                  max={100}
+                  step={5}
+                  value={s.unlockThresholdPct}
+                  onChange={(e) => s.setUnlockThresholdPct(Number(e.target.value))}
+                />
+                <span className="tf-range-value mono">{s.unlockThresholdPct}%</span>
+              </div>
+            </Field>
+            <Field label={`Mastery window — ${s.unlockWindowSessions} session${s.unlockWindowSessions === 1 ? "" : "s"}`}>
+              <div className="tf-range-row">
+                <input
+                  type="range"
+                  className="tf-range"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={s.unlockWindowSessions}
+                  onChange={(e) => s.setUnlockWindowSessions(Number(e.target.value))}
+                />
+                <span className="tf-range-value mono">{s.unlockWindowSessions}</span>
+              </div>
+              <p className="tf-settings-note tf-range-hint">
+                A key unlocks the next once it reaches the threshold speed for this
+                many sessions in a row. Lessons and AI drills only use unlocked keys.
+              </p>
+            </Field>
+            <Field label="Reset progression">
+              <Button
+                variant="ghost"
+                onClick={() => resetProgression.mutate()}
+                disabled={resetProgression.isPending}
+              >
+                {resetProgression.isSuccess ? "Progression reset ✓" : "Reset to starting keys"}
+              </Button>
+              <p className="tf-settings-note">
+                Restart from the initial keys for the current layout.
+              </p>
+            </Field>
+          </>
+        )}
       </Card>
 
       <AiProvider />

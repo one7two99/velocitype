@@ -21,6 +21,9 @@ _DEFAULTS = {
     "duration_s": 60,
     "word_count": 25,
     "target_wpm": 40,
+    "progressive_unlock": True,
+    "unlock_threshold_pct": 90,
+    "unlock_window_sessions": 3,
 }
 
 
@@ -32,6 +35,9 @@ def _row_to_response(row: UserSettings) -> UserSettingsResponse:
         duration_s=row.duration_s,
         word_count=row.word_count,
         target_wpm=row.target_wpm,
+        progressive_unlock=row.progressive_unlock,
+        unlock_threshold_pct=row.unlock_threshold_pct,
+        unlock_window_sessions=row.unlock_window_sessions,
         saved=True,
     )
 
@@ -67,5 +73,8 @@ async def put_settings(
     row.duration_s = payload.duration_s
     row.word_count = payload.word_count
     row.target_wpm = payload.target_wpm
+    row.progressive_unlock = payload.progressive_unlock
+    row.unlock_threshold_pct = payload.unlock_threshold_pct
+    row.unlock_window_sessions = payload.unlock_window_sessions
     await db.commit()
     return _row_to_response(row)

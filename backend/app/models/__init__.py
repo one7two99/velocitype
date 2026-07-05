@@ -4,6 +4,7 @@ from app.models.ai_config import UserAiConfig
 from app.models.api_key import ApiKey
 from app.models.key_stat import KeyStat
 from app.models.keystroke import Keystroke
+from app.models.layout_progress import UserLayoutProgress
 from app.models.layout import Layout
 from app.models.ngram_stat import NgramStat
 from app.models.prompt import UserPrompt
@@ -25,4 +26,5 @@ __all__ = [
     "UserAiConfig",
     "NgramStat",
     "UserSettings",
+    "UserLayoutProgress",
 ]

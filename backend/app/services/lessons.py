@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.engine import adaptive
 from app.engine.layouts import get_layout
 from app.schemas.session import WeakKeyInfo
+from app.services import progress
 from app.services.key_stats import build_key_metrics
 
 
@@ -31,7 +32,13 @@ async def generate_adaptive_lesson(
     if layout is None:
         raise ValueError(f"unknown layout '{layout_id}'")
 
+    # Restrict to the user's unlocked keys (progressive unlocking / keybr-style).
+    settings = await progress.get_user_settings(db, user_id)
+    unlocked = await progress.get_unlocked_chars(db, user_id, layout, settings)
+    unlocked_set = set(unlocked)
+
     metrics = await build_key_metrics(db, user_id, layout_id)
+    metrics = [m for m in metrics if m.character in unlocked_set]
     scored = adaptive.weakest_keys(metrics, n=5, target_wpm=target_wpm) if metrics else []
     # Only treat keys with a non-trivial score as genuinely "weak".
     weak_scored = [s for s in scored if s.score > 0.0]
@@ -46,7 +53,7 @@ async def generate_adaptive_lesson(
 
     lesson = adaptive.generate_lesson(
         weak_keys=weak_chars,
-        layout_characters=layout.characters,
+        layout_characters=unlocked,
         rng=rng,
         **gen_kwargs,
     )

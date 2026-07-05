@@ -32,6 +32,8 @@ class KeyStat(Base):
     latency_sq_sum: Mapped[float] = mapped_column(Float, server_default=text("0"), nullable=False)
     # Bookkeeping for the recency term of the adaptive score (Section 5).
     last_session_seq: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
+    # Consecutive sessions this key met the mastery threshold (progressive unlock).
+    qualifying_streak: Mapped[int] = mapped_column(Integer, server_default=text("0"), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )

@@ -64,6 +64,8 @@ class SessionCompleteResponse(BaseModel):
     session_id: uuid.UUID
     metrics: SessionMetrics
     weak_keys: list[WeakKeyInfo] = Field(default_factory=list)
+    # The key newly revealed by progressive unlocking this session, if any.
+    unlocked_char: str | None = None
 
 
 class SessionSummary(BaseModel):

@@ -9,6 +9,27 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-07-05
+
+### Added
+- **Progressive key unlocking (keybr-style).** You practice a small starting set
+  of keys; the next key unlocks once every active key reaches a share of your
+  target speed over a number of sessions. Both are configurable in Preferences —
+  the **unlock threshold %** and the **mastery window (sessions)** — plus a
+  **toggle** and a **Reset progression** button. Lessons **and AI drills only ever
+  use unlocked keys** (the deterministic generator now produces clean pseudo-words
+  from just the unlocked letters when the set is small). The Heatmaps page shows a
+  progress indicator and locks not-yet-unlocked keys; Session Complete announces a
+  newly unlocked key.
+- New API: `GET /api/lessons/unlock`, `POST /api/lessons/unlock/reset`;
+  `POST /api/sessions/{id}/complete` returns `unlocked_char`; three new settings
+  synced across browsers. New table `user_layout_progress` + `key_stats.qualifying_streak`
+  (migration `0007`).
+
+### Changed
+- **Existing accounts are grandfathered** to all keys unlocked (no regression);
+  enable/reset progression from Preferences. New accounts start progressive.
+
 ## [0.30.0] - 2026-07-05
 
 ### Added
@@ -427,7 +448,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.30.0...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.31.0...HEAD
+[0.31.0]: https://github.com/adi-infra/typeforge/compare/v0.30.0...v0.31.0
 [0.30.0]: https://github.com/adi-infra/typeforge/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/adi-infra/typeforge/compare/v0.28.2...v0.29.0
 [0.28.2]: https://github.com/adi-infra/typeforge/compare/v0.28.1...v0.28.2

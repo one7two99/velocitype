@@ -22,3 +22,12 @@ class LayoutInfo(BaseModel):
 
 class LayoutList(BaseModel):
     layouts: list[LayoutInfo]
+
+
+class UnlockState(BaseModel):
+    progressive: bool
+    unlocked_count: int
+    total: int
+    unlock_order: list[str]
+    unlocked: list[str]
+    next_char: str | None = None

@@ -19,6 +19,9 @@ function toBody(s: ReturnType<typeof useSettings.getState>) {
     duration_s: s.durationS,
     word_count: s.wordCount,
     target_wpm: s.targetWpm,
+    progressive_unlock: s.progressiveUnlock,
+    unlock_threshold_pct: s.unlockThresholdPct,
+    unlock_window_sessions: s.unlockWindowSessions,
   };
 }
 
@@ -47,6 +50,9 @@ export function useSettingsSync() {
             durationS: s.duration_s,
             wordCount: s.word_count,
             targetWpm: s.target_wpm,
+            progressiveUnlock: s.progressive_unlock,
+            unlockThresholdPct: s.unlock_threshold_pct,
+            unlockWindowSessions: s.unlock_window_sessions,
           });
         } else {
           // First time on the server → seed it from the current local settings.
@@ -77,7 +83,10 @@ export function useSettingsSync() {
         state.goal !== prev.goal ||
         state.durationS !== prev.durationS ||
         state.wordCount !== prev.wordCount ||
-        state.targetWpm !== prev.targetWpm;
+        state.targetWpm !== prev.targetWpm ||
+        state.progressiveUnlock !== prev.progressiveUnlock ||
+        state.unlockThresholdPct !== prev.unlockThresholdPct ||
+        state.unlockWindowSessions !== prev.unlockWindowSessions;
       if (!changed) return;
       clearTimeout(timer);
       timer = setTimeout(() => {

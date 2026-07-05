@@ -44,6 +44,16 @@ export interface SessionCompleteResponse {
   session_id: string;
   metrics: SessionMetrics;
   weak_keys: WeakKeyInfo[];
+  unlocked_char?: string | null;
+}
+
+export interface UnlockState {
+  progressive: boolean;
+  unlocked_count: number;
+  total: number;
+  unlock_order: string[];
+  unlocked: string[];
+  next_char: string | null;
 }
 
 export interface SessionSummary {
@@ -117,6 +127,9 @@ export interface UserSettings {
   duration_s: number;
   word_count: number;
   target_wpm: number;
+  progressive_unlock: boolean;
+  unlock_threshold_pct: number;
+  unlock_window_sessions: number;
   saved: boolean;
 }
 

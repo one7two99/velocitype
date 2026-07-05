@@ -27,6 +27,7 @@ from app.schemas.session import (
     SessionSummary,
     WeakKeyInfo,
 )
+from app.services import progress
 from app.services.key_stats import (
     apply_keystrokes,
     session_has_keystrokes,
@@ -137,10 +138,19 @@ async def complete_session(
         for s in scored if s.score > 0.0
     ]
 
+    # Progressive unlocking: reveal the next key if the active set is mastered.
+    settings = await progress.get_user_settings(db, user.id)
+    unlocked_char = await progress.advance_if_mastered(
+        db, user.id, session.layout_id, settings
+    )
+    if unlocked_char is not None:
+        await db.commit()
+
     return SessionCompleteResponse(
         session_id=session.id,
         metrics=SessionMetrics.model_validate(session),
         weak_keys=weak,
+        unlocked_char=unlocked_char,
     )
 
 

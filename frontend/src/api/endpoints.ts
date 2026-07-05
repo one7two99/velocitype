@@ -22,6 +22,7 @@ import type {
   SessionMode,
   SessionStartResponse,
   StatsOverview,
+  UnlockState,
   User,
   UserSettings,
 } from "./types";
@@ -104,6 +105,10 @@ export const lessonsApi = {
         (targetWpm ? `&target_wpm=${targetWpm}` : ""),
     ),
   layouts: () => api.get<LayoutList>("/api/lessons/layouts"),
+  unlock: (layoutId: string) =>
+    api.get<UnlockState>(`/api/lessons/unlock?layout_id=${layoutId}`),
+  resetProgression: (layoutId: string) =>
+    api.post<UnlockState>(`/api/lessons/unlock/reset?layout_id=${layoutId}`),
 };
 
 export const mcpApi = {

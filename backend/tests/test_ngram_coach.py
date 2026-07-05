@@ -10,6 +10,18 @@ async def _register(client, user):
     assert (await client.post("/api/auth/register", json=user)).status_code == 201
 
 
+async def _full_keyboard(client):
+    """Disable progressive unlocking so drills may use the whole layout."""
+    s = (await client.get("/api/settings")).json()
+    keep = (
+        "theme", "layout_id", "goal", "duration_s", "word_count", "target_wpm",
+        "progressive_unlock", "unlock_threshold_pct", "unlock_window_sessions",
+    )
+    body = {k: s[k] for k in keep}
+    body["progressive_unlock"] = False
+    assert (await client.put("/api/settings", json=body)).status_code == 200
+
+
 async def _seed_sc(client):
     """Type 10 isolated 's c' pairs so the "sc" bigram passes the trust threshold."""
     sid = (
@@ -48,6 +60,7 @@ async def test_analyze_payload_includes_ngrams(client, unique_user, monkeypatch)
 
 async def test_drill_targets_bigrams_via_llm(client, unique_user, monkeypatch):
     await _register(client, unique_user)
+    await _full_keyboard(client)
 
     async def sc_words(prompt, system=None, *, model=None, num_predict=300):
         # The focus bigram must be visible in the prompt, and we return words rich
@@ -84,6 +97,7 @@ async def test_drill_accepts_large_focus_selection(client, unique_user, monkeypa
 
 async def test_drill_bigram_falls_back_to_letters(client, unique_user, monkeypatch):
     await _register(client, unique_user)
+    await _full_keyboard(client)
 
     async def junk(prompt, system=None, *, model=None, num_predict=300):
         return "!!! 123 @@@"  # unusable → sanitizer rejects → deterministic fallback

@@ -85,3 +85,12 @@
 .tf-keys tr:last-child td { border-bottom: none; }
 
 .tf-btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+
+.tf-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}

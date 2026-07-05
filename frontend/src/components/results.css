@@ -103,3 +103,12 @@
   /* Drop the keyboard hints on narrow screens so labels always fit one line. */
   .tf-results-actions .tf-kbd { display: none; }
 }
+
+.tf-results-unlock {
+  background: color-mix(in srgb, var(--correct) 15%, transparent);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
