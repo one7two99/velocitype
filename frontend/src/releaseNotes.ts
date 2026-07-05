@@ -15,6 +15,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.29.0",
+    date: "2026-07-05",
+    sections: {
+      added: [
+        "Profile → Account: 'Delete all data' wipes all your metrics and AI settings (including any stored Mistral API key) and starts you fresh with empty stats, while keeping your account. It's a real, permanent deletion.",
+      ],
+    },
+  },
+  {
     version: "0.28.2",
     date: "2026-07-05",
     sections: {

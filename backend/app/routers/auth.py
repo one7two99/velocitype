@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import or_, select, update
+from sqlalchemy import delete, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.cookies import clear_auth_cookies, set_access_cookie, set_refresh_cookie
@@ -26,7 +26,12 @@ from app.auth.tokens import (
 from app.config import get_settings
 from app.db.session import get_db
 from app.errors import ProblemException
+from app.models.ai_config import UserAiConfig
+from app.models.key_stat import KeyStat
+from app.models.ngram_stat import NgramStat
+from app.models.prompt import UserPrompt
 from app.models.refresh_token import RefreshToken
+from app.models.session import TypingSession
 from app.models.user import User
 from app.schemas.auth import (
     ChangeEmailRequest,
@@ -263,3 +268,25 @@ async def delete_account(
     await db.commit()
     clear_auth_cookies(response)
     return Response(status_code=204)
+
+
+@router.post("/me/reset", response_model=MessageResponse)
+async def reset_data(
+    payload: DeleteAccountRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> MessageResponse:
+    """Hard-delete all of the user's data — sessions, keystrokes, per-key and
+    n-gram stats, AI-provider config (including any stored Mistral API key) and
+    prompt overrides — leaving a fresh profile. The account, login and MCP keys
+    are kept. These are real row deletions, not soft-deletes."""
+    if not verify_password(payload.password, user.password_hash):
+        raise _bad_password()
+    # Deleting sessions cascades to keystrokes via the FK (ondelete=CASCADE).
+    await db.execute(delete(TypingSession).where(TypingSession.user_id == user.id))
+    await db.execute(delete(KeyStat).where(KeyStat.user_id == user.id))
+    await db.execute(delete(NgramStat).where(NgramStat.user_id == user.id))
+    await db.execute(delete(UserAiConfig).where(UserAiConfig.user_id == user.id))
+    await db.execute(delete(UserPrompt).where(UserPrompt.user_id == user.id))
+    await db.commit()
+    return MessageResponse(detail="All your data has been deleted.")

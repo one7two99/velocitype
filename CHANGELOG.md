@@ -9,6 +9,16 @@ versions carry fixes; the public API/UX is not yet considered stable.
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-07-05
+
+### Added
+- **Delete all data** under Profile → Account. Password-confirmed, it permanently
+  removes all of the user's data — sessions, keystrokes, per-key and bigram stats,
+  AI-provider config (including any stored Mistral API key) and prompt overrides —
+  leaving a fresh profile with empty stats. The account, login and MCP keys are
+  kept. Deletions are **real row deletes** (`POST /api/auth/me/reset`), not
+  soft-deletes/flags.
+
 ## [0.28.2] - 2026-07-05
 
 ### Fixed
@@ -406,7 +416,8 @@ versions carry fixes; the public API/UX is not yet considered stable.
   proxy with security headers, least-privilege PostgreSQL role, JWT keygen
   script, and `.env.example`.
 
-[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.28.2...HEAD
+[Unreleased]: https://github.com/adi-infra/typeforge/compare/v0.29.0...HEAD
+[0.29.0]: https://github.com/adi-infra/typeforge/compare/v0.28.2...v0.29.0
 [0.28.2]: https://github.com/adi-infra/typeforge/compare/v0.28.1...v0.28.2
 [0.28.1]: https://github.com/adi-infra/typeforge/compare/v0.28.0...v0.28.1
 [0.28.0]: https://github.com/adi-infra/typeforge/compare/v0.27.0...v0.28.0
